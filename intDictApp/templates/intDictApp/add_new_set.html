@@ -1,0 +1,36 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<form action = "{% url 'add-set' %}" method="post">
+    {% csrf_token %}
+    <br>
+    <label for="set_name_1">Set name:</label><br />
+    <input type="text" name="set_name_2" id="set_name_1" />
+    <br><br>
+
+    <table style="width:100%">
+      <tr>
+        <th>Source language</th>
+        <th>Target language</th>
+      </tr>
+        <tr>
+        <th>Polish</th>
+        <th>English</th>
+      </tr>
+
+        {% for i in tableLen %}
+            <tr>
+                <td align="center"><input type="text" name="srcLan{{i}}" id="srcLan{{i}}"/></td>
+                <td align="center"><input type="text" name="tarLan{{i}}" id="tarLan{{i}}"/></td>
+            </tr>
+        {% endfor %}
+
+    </table>
+    <br>
+
+    <input type="submit" value="Submit" />
+</form>
+
+<a href="{% url 'category-sets-list' id %}">Go Back</a>
+
+{% endblock %}

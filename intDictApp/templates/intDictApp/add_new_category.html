@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<br>
+<form action = "{% url 'add-category' %}" method="post">
+    {% csrf_token %}
+    <label for="answer">New category name:</label><br />
+    <input type="text" name="answer" id="answer" />
+    <br><br>
+    <input type="submit" value="Apply & Next" />
+</form>
+<br><br>
+<a href="{% url 'categories' %}">Go Back</a>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h3>Exam is performing for category: {{category.name}}, set: {{set.name}}</h3>
+
+
+<br><br>
+
+{{current_word_idx}}/{{size}}
+
+<br><br>
+
+Translate word: {{ words.src_word }}
+
+<br><br>
+<form action = "{% url 'exam' %}" method="post">
+    {% csrf_token %}
+    <input type="text" name="answer" id="answer" />
+    <br><br>
+    <input type="submit" value="Apply & Next" />
+</form>
+
+<br><br>
+
+{% endblock %}

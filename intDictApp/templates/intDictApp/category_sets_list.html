@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h2>Sets list for category: {{ category.name }}</h2>
+
+  <ul>
+    {% for set in sets %}
+
+      <form method="post">
+          <li><a href="{{ set.get_absolute_url }}">{{set.name}}</a></li>
+      </form>
+
+    {% endfor %}
+
+  </ul>
+
+        <a href="{% url 'add-set' %}">Add set</a>
+
+{% endblock %}

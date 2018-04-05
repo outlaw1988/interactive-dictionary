@@ -1,0 +1,35 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h2>Words list for set: {{ set.name }}</h2>
+
+<br>
+
+<table style="width:100%">
+  <tr>
+    <th>Source language</th>
+    <th>Target language</th>
+  </tr>
+    <tr>
+    <th>Polish</th>
+    <th>English</th>
+  </tr>
+    {% for word in words %}
+      <tr>
+        <td align="center">{{word.src_word}}</td>
+        <td align="center">{{word.target_word}}</td>
+      </tr>
+    {% endfor %}
+</table>
+<br>
+
+<a href="{% url 'category-sets-list' category_id %}">
+<button>Go back</button>
+</a>
+
+<a href="{% url 'exam' %}">
+<button>Perform exam</button>
+</a>
+
+{% endblock %}
