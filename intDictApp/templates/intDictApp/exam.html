@@ -14,13 +14,41 @@
 Translate word: {{ words.src_word }}
 
 <br><br>
+
+
+
 <form action = "{% url 'exam' %}" method="post">
     {% csrf_token %}
     <input type="text" name="answer" id="answer" />
     <br><br>
-    <input type="submit" value="Apply & Next" />
+    <input type="button" value="Check" onclick="show()" />
+
+    <br><br>
+
+    <input type="submit" name="next" value="Next" />
+
+    <br><br>
+
+    <div id="succ_or_fail" class="answer_list" ></div>
+    <input type="hidden" name="succ_or_fail_hid" id="dash_new_shout_textarea_hidden" />
 </form>
 
-<br><br>
+<script>
+
+    function show() {
+
+        var user_answer = document.getElementById("answer").value;
+        var corr_answer = "{{words.target_word}}";
+
+        if (user_answer.toString() == corr_answer.toString()) {
+            document.getElementById("succ_or_fail").innerHTML = "SUCCESS";
+        }
+        else {
+            document.getElementById("succ_or_fail").innerHTML = "FAILURE";
+        }
+
+    }
+
+</script>
 
 {% endblock %}

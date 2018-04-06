@@ -4,8 +4,8 @@
 <br>
 <form action = "{% url 'add-category' %}" method="post">
     {% csrf_token %}
-    <label for="answer">New category name:</label><br />
-    <input type="text" name="answer" id="answer" />
+    <label for="category_name">New category name:</label><br />
+    <input type="text" name="category_name" id="category_name" />
     <br><br>
     <input type="submit" value="Apply & Next" />
 </form>
