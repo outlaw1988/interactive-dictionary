@@ -30,7 +30,7 @@ Translate word: {{ words.src_word }}
     <br><br>
 
     <div id="succ_or_fail" class="answer_list" ></div>
-    <input type="hidden" name="succ_or_fail_hid" id="dash_new_shout_textarea_hidden" />
+
 </form>
 
 <script>
@@ -41,10 +41,10 @@ Translate word: {{ words.src_word }}
         var corr_answer = "{{words.target_word}}";
 
         if (user_answer.toString() == corr_answer.toString()) {
-            document.getElementById("succ_or_fail").innerHTML = "SUCCESS";
+            document.getElementById("succ_or_fail").innerHTML = "OK";
         }
         else {
-            document.getElementById("succ_or_fail").innerHTML = "FAILURE";
+            document.getElementById("succ_or_fail").innerHTML = "WRONG, right answer: " + corr_answer.toString();
         }
 
     }

@@ -8,5 +8,6 @@ urlpatterns = [
     path('add_category', views.add_category, name='add-category'),
     path('add_set', views.add_set, name='add-set'),
     path('preview/<uuid:pk>', views.set_preview_list, name='set-preview-list'),
-    path('exam', views.exam, name='exam')
+    path('exam', views.exam, name='exam'),
+    path('exam_summary', views.exam_summary, name='exam-summary')
 ]

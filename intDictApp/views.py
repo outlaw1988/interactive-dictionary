@@ -5,6 +5,7 @@ from .models import Category, Set, Setup, Word, SrcLanguage, TargetLanguage
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .config import Config
+from .utils import *
 
 config = Config()
 
@@ -128,11 +129,15 @@ def exam(request):
         config.create_shuffle_list(len(words))
         return render(request, 'intDictApp/exam.html', create_context())
 
-    # When user clicks "Submit"
+    # When user clicks "Next" - submitting form
     if request.method == 'POST':
         answer = request.POST['answer']
+        shuffled_idx = config.shuffled_idxes[config.current_word_idx]
         if answer == config.curr_corr_ans:
-                config.corr_ans_num += 1
+            config.corr_ans_num += 1
+            config.assign_val_to_answers_list(shuffled_idx, 1)
+        else:
+            config.assign_val_to_answers_list(shuffled_idx, 0)
 
         config.current_word_idx += 1
 
@@ -146,9 +151,29 @@ def exam(request):
 
             setup.last_result = result
             setup.save()
-            config.clean_up()
 
-            return HttpResponseRedirect(reverse('category-sets-list',
-                                                kwargs={'pk': config.current_category_id}))
+            return HttpResponseRedirect(reverse('exam-summary'))
 
         return render(request, 'intDictApp/exam.html', create_context())
+
+
+def exam_summary(request):
+
+    words = Word.objects.filter(set=config.current_set)
+    src_words, target_words = convert_queryset_to_list_words(words)
+    # print(src_words)
+    # print(target_words)
+    setup = Setup.objects.filter(set=config.current_set)[0]
+
+    context = {
+        'src_words': src_words,
+        'target_words': target_words,
+        'category': config.current_category,
+        'set': config.current_set,
+        'setup': setup,
+        'answers_list': config.answers_list
+    }
+
+    config.clean_up()
+
+    return render(request, 'intDictApp/exam_summary.html', context)
