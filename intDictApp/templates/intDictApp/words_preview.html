@@ -2,23 +2,23 @@
 
 {% block content %}
 
-<h2>Words list for set: {{ set.name }}</h2>
+<h2 class="words-list-header">Words list for set: {{ set.name }}</h2>
 
 <br>
 
-<table style="width:100%">
+<table class="tables">
   <tr>
-    <th>Source language</th>
-    <th>Target language</th>
+    <th class="table-headers">Source language</th>
+    <th class="table-headers">Target language</th>
   </tr>
     <tr>
-    <th>Polish</th>
-    <th>English</th>
+    <th class="table-headers">Polish</th>
+    <th class="table-headers">English</th>
   </tr>
     {% for word in words %}
       <tr>
-        <td align="center">{{word.src_word}}</td>
-        <td align="center">{{word.target_word}}</td>
+        <td class="table-words">{{word.src_word}}</td>
+        <td class="table-words">{{word.target_word}}</td>
       </tr>
     {% endfor %}
 </table>

@@ -7,46 +7,98 @@
 
 <br><br>
 
-{{current_word_idx}}/{{size}}
+<span id="curr_word_num">{{word_idx_to_show}}</span>/{{size}}
 
 <br><br>
 
-Translate word: {{ words.src_word }}
+Translate word: <span id="src_word">{{src_word}}</span>
 
 <br><br>
 
+<input type="text" name="answer" id="answer" autofocus/>
+<button type="button" onclick="check_word()" id="check-button">Check</button>
+<button type="button" onclick="next_word()" id="next-button">Next</button>
 
+<br><br>
 
-<form action = "{% url 'exam' %}" method="post">
-    {% csrf_token %}
-    <input type="text" name="answer" id="answer" />
-    <br><br>
-    <input type="button" value="Check" onclick="show()" />
+<div id="succ_or_fail" class="answer_list" ></div>
 
-    <br><br>
+<script type="text/javascript">
 
-    <input type="submit" name="next" value="Next" />
+    var curr_word_num = 0;
+    var size = {{size}};
 
-    <br><br>
+    var check_word = function () {
+        console.log("Check word called...");
+        document.getElementById("answer").disabled = true;
 
-    <div id="succ_or_fail" class="answer_list" ></div>
-
-</form>
-
-<script>
-
-    function show() {
-
-        var user_answer = document.getElementById("answer").value;
-        var corr_answer = "{{words.target_word}}";
-
-        if (user_answer.toString() == corr_answer.toString()) {
-            document.getElementById("succ_or_fail").innerHTML = "OK";
-        }
-        else {
-            document.getElementById("succ_or_fail").innerHTML = "WRONG, right answer: " + corr_answer.toString();
+        var url = "{% url 'exam-check' %}";
+        var data = {
+            "answer": $("#answer").val(),
         }
 
+        var json = JSON.stringify(data);
+
+        $.post(url, json).then(function (response) {
+            console.log('success', response);
+            document.getElementById("succ_or_fail").innerHTML = response.message;
+
+        }, function (response) {
+            console.log('error', response);
+        });
+    }
+
+    var next_word = function() {
+        console.log("Next word called...");
+
+        document.getElementById("answer").disabled = false;
+        document.getElementById("succ_or_fail").innerHTML = "";
+        document.getElementById("answer").value = "";
+        document.getElementById("answer").focus();
+
+        var url = "{% url 'exam-next' %}";
+        var data = {
+            "request": "",
+        }
+
+        var json = JSON.stringify(data);
+
+        if (curr_word_num == (size - 1)) {
+            summary_url = "{% url 'exam-summary' %}";
+
+            $.post(url, json).then(function (response) {
+                // empty
+            });
+
+            load_url(summary_url);
+        }
+        else if (curr_word_num < (size - 1)) {
+            $.post(url, json).then(function (response) {
+                curr_word_num += 1
+                //console.log(response);
+                document.getElementById("curr_word_num").innerHTML = response.word_idx_to_show;
+                document.getElementById("src_word").innerHTML = response.src_word;
+            });
+        }
+
+    }
+
+    window.onkeyup = function(e) {
+        var key = e.keyCode ? e.keyCode : e.which;
+
+        if (key == 13) {
+            console.log("Enter pressed...");
+            check_word();
+        }else if (key == 17) {
+            console.log("Control pressed...");
+            next_word();
+        }
+
+    }
+
+    function load_url(new_location) {
+        window.location = new_location;
+        return false;
     }
 
 </script>
