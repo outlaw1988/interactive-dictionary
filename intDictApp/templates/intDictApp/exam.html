@@ -19,7 +19,7 @@ Translate word: <span id="src_word">{{src_word}}</span>
 <button type="button" onclick="check_word()" id="check-button">Check</button>
 <button type="button" onclick="next_word()" id="next-button">Next</button>
 
-<br>
+<br><br>
 
 <div id="succ_or_fail" class="answer_list" ></div>
 
@@ -84,44 +84,19 @@ Translate word: <span id="src_word">{{src_word}}</span>
     }
 
     window.onkeyup = function(e) {
-    var key = e.keyCode ? e.keyCode : e.which;
+        var key = e.keyCode ? e.keyCode : e.which;
 
-    if (key == 13) {
-        console.log("Enter pressed...");
-        check_word();
-    }else if (key == 17) {
-        console.log("Control pressed...");
-        next_word();
+        if (key == 13) {
+            console.log("Enter pressed...");
+            check_word();
+        }else if (key == 17) {
+            console.log("Control pressed...");
+            next_word();
+        }
+
     }
 
-}
-
-    // document.getElementById('answer').onkeypress = function(e){
-    // if (!e) e = window.event;
-    // var keyCode = e.keyCode || e.which;
-    //   if (keyCode == '13'){
-    //     console.log("Enter pressed...");
-    //     check_word();
-    //     return false;
-    //   }
-    //   else if (keyCode == '17') {
-    //     console.log("Control pressed...");
-    //     return false;
-    //   }
-    // }
-
-    // document.getElementById('answer').onkeypress = function(e){
-    // if (!e) e = window.event;
-    // var keyCode = e.keyCode || e.which;
-    //   if (keyCode == '17'){
-    //     console.log("Backslash pressed...");
-    //     next_word();
-    //     return false;
-    //   }
-    // }
-
-    function load_url(new_location)
-    {
+    function load_url(new_location) {
         window.location = new_location;
         return false;
     }
