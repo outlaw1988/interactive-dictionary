@@ -6,6 +6,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .config import Config
 from .utils import *
+from django.views.generic import TemplateView, View
+from braces import views
 
 config = Config()
 
@@ -106,55 +108,94 @@ def set_preview_list(request, pk):
     return render(request, 'intDictApp/words_preview.html', context)
 
 
-def exam(request):
+class ExamInit(TemplateView):
 
-    def create_context():
+    template_name = 'intDictApp/exam.html'
+
+    def get_context_data(self, **kwargs):
+        words = Word.objects.filter(set=config.current_set)
+        config.create_shuffle_list(len(words))
         shuffled_idx = config.shuffled_idxes[config.current_word_idx]
         words_to_show = words[shuffled_idx]
+        src_word = words_to_show.src_word
         config.curr_corr_ans = words_to_show.target_word
         context = {
             'category': config.current_category,
             'set': config.current_set,
-            'words': words_to_show,
-            'current_word_idx': config.current_word_idx + 1,
+            'src_word': src_word,
+            'word_idx_to_show': config.current_word_idx + 1,
             'size': config.size
         }
 
         return context
 
-    words = Word.objects.filter(set=config.current_set)
 
-    # exam view initialization
-    if request.method == 'GET':
-        config.create_shuffle_list(len(words))
-        return render(request, 'intDictApp/exam.html', create_context())
+class ExamCheck(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
 
-    # When user clicks "Next" - submitting form
-    if request.method == 'POST':
-        answer = request.POST['answer']
+    require_json = True
+
+    def post(self, request, *args, **kwargs):
+        config.is_check_clicked = True
+        answer = self.request_json["answer"]
         shuffled_idx = config.shuffled_idxes[config.current_word_idx]
+
+        message = ''
+
         if answer == config.curr_corr_ans:
+            message = "OK"
             config.corr_ans_num += 1
             config.assign_val_to_answers_list(shuffled_idx, 1)
         else:
+            message = "WRONG, right answer is: " + config.curr_corr_ans
             config.assign_val_to_answers_list(shuffled_idx, 0)
 
+        return self.render_json_response({"message": message})
+
+
+class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
+
+    require_json = True
+
+    def post(self, request, *args, **kwargs):
+
+        words = Word.objects.filter(set=config.current_set)
         config.current_word_idx += 1
 
+        # Set end
         if config.current_word_idx == config.size:
-
             result = int((float(config.corr_ans_num) / float(config.size)) * 100.0)
             setup = Setup.objects.filter(set=config.current_set)[0]
-
             if result > setup.best_result:
                 setup.best_result = result
 
             setup.last_result = result
             setup.save()
 
-            return HttpResponseRedirect(reverse('exam-summary'))
+            context = {
+                "request": ""
+            }
 
-        return render(request, 'intDictApp/exam.html', create_context())
+            return self.render_json_response(context)
+
+        else:
+            shuffled_idx = config.shuffled_idxes[config.current_word_idx]
+
+            if config.is_check_clicked is False:
+                config.assign_val_to_answers_list(shuffled_idx, 0)
+                print(config.answers_list)
+
+            config.is_check_clicked = False
+
+            words_to_show = words[shuffled_idx]
+            src_word = words_to_show.src_word
+            config.curr_corr_ans = words_to_show.target_word
+
+            context = {
+                'src_word': src_word,
+                'word_idx_to_show': config.current_word_idx + 1,
+            }
+
+            return self.render_json_response(context)
 
 
 def exam_summary(request):
