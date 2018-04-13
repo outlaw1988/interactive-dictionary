@@ -11,6 +11,10 @@ class Category(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=100, help_text="Category name")
+    default_source_language = models.ForeignKey('SrcLanguage', on_delete=models.SET_NULL,
+                                                null=True)
+    default_target_language = models.ForeignKey('TargetLanguage', on_delete=models.SET_NULL,
+                                                null=True)
 
     def __str__(self):
         return self.name

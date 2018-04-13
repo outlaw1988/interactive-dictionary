@@ -86,11 +86,11 @@ Translate word: <span id="src_word">{{src_word}}</span>
     window.onkeyup = function(e) {
         var key = e.keyCode ? e.keyCode : e.which;
 
+        // enter
         if (key == 13) {
-            console.log("Enter pressed...");
             check_word();
+        // control
         }else if (key == 17) {
-            console.log("Control pressed...");
             next_word();
         }
 

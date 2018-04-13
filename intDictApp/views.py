@@ -8,6 +8,7 @@ from .config import Config
 from .utils import *
 from django.views.generic import TemplateView, View
 from braces import views
+from .forms import LanguageForm
 
 config = Config()
 
@@ -43,12 +44,30 @@ def category_sets_list(request, pk):
 def add_category(request):
     if request.method == 'POST':
         category_name = request.POST['category_name']
-        category = Category(user=request.user, name=category_name)
+        def_src_lan = request.POST['def_src_lan']
+        def_target_lan = request.POST['def_target_lan']
+
+        src_language = SrcLanguage.objects.filter(user=request.user, name=def_src_lan)
+        target_language = TargetLanguage.objects.filter(user=request.user, name=def_target_lan)
+
+        category = Category(user=request.user, name=category_name,
+                            default_source_language=src_language[0],
+                            default_target_language=target_language[0])
         category.save()
 
         return HttpResponseRedirect(reverse('categories'))
     else:
-        return render(request, 'intDictApp/add_new_category.html')
+        src_languages = SrcLanguage.objects.filter(user=request.user)
+        target_languages = TargetLanguage.objects.filter(user=request.user)
+        src_languages_lst, target_languages_lst = \
+            convert_queryset_to_list_languages(src_languages, target_languages)
+
+        context = {
+            'src_languages': src_languages_lst,
+            'target_languages': target_languages_lst
+        }
+
+        return render(request, 'intDictApp/add_new_category.html', context)
 
 
 def add_set(request):
@@ -202,8 +221,6 @@ def exam_summary(request):
 
     words = Word.objects.filter(set=config.current_set)
     src_words, target_words = convert_queryset_to_list_words(words)
-    # print(src_words)
-    # print(target_words)
     setup = Setup.objects.filter(set=config.current_set)[0]
 
     context = {
@@ -212,9 +229,52 @@ def exam_summary(request):
         'category': config.current_category,
         'set': config.current_set,
         'setup': setup,
-        'answers_list': config.answers_list
+        'answers_list': config.answers_list,
+        'id': config.current_category_id
     }
 
     config.clean_up()
 
     return render(request, 'intDictApp/exam_summary.html', context)
+
+
+def add_language(request):
+
+    if request.method == "POST":
+
+        form = LanguageForm(request.POST, user=request.user)
+
+        if form.is_valid():
+
+            print("Got to is valid.....")
+
+            language_name = request.POST["language_name"]
+            src_language = SrcLanguage(user=request.user, name=language_name)
+            target_language = TargetLanguage(user=request.user, name=language_name)
+            src_language.save()
+            target_language.save()
+
+            return HttpResponseRedirect(reverse('categories'))
+    else:
+
+        form = LanguageForm()
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "intDictApp/add_language.html", context)
+
+
+# class AddLanguage(TemplateView):
+#
+#     template_name = "intDictApp/add_language.html"
+#
+#     def post(self, request):
+#         language_name = request.POST["language_name"]
+#         src_language = SrcLanguage(user=request.user, name=language_name)
+#         target_language = TargetLanguage(user=request.user, name=language_name)
+#         src_language.save()
+#         target_language.save()
+#
+#         return HttpResponseRedirect(reverse('categories'))
