@@ -1,0 +1,48 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<br>
+<form action = "{% url 'add-category' %}" method="post">
+    {% csrf_token %}
+    <label for="category_name">New category name:</label><br />
+    <input type="text" name="category_name" id="category_name" />
+    <br/><br/>
+    <label>Default source language</label><br/>
+    <select name="def_src_lan">
+      <script language="javascript" type="text/javascript">
+          var src_languages = {{src_languages|safe}};
+          var src_len = src_languages.length;
+
+          src_lan_html = "";
+
+          for (var i = 0; i < src_len; i++) {
+              src_lan_html += "<option>" + src_languages[i].toString() + "</option>"
+          }
+
+          document.write(src_lan_html);
+      </script>
+
+    </select>
+    <br/><br/>
+    <label>Default target language</label><br/>
+    <select name="def_target_lan">
+      <script language="javascript" type="text/javascript">
+          var target_languages = {{target_languages|safe}};
+          var target_len = target_languages.length;
+
+          target_lan_html = "";
+
+          for (var i = 0; i < target_len; i++) {
+              target_lan_html += "<option>" + target_languages[i].toString() + "</option>"
+          }
+
+          document.write(target_lan_html);
+      </script>
+    </select>
+    <br><br>
+    <input type="submit" value="Apply & Next" />
+</form>
+<br><br>
+<a href="{% url 'categories' %}">Go Back</a>
+
+{% endblock %}

@@ -3,7 +3,6 @@ from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from .models import SrcLanguage, TargetLanguage, Category
-from .utils import *
 
 
 class CategoryForm(forms.Form):

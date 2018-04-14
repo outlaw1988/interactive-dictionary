@@ -76,9 +76,15 @@ def add_set(request):
 
     table_list = list(range(1, 11))
 
+    src_language = config.current_category.default_source_language
+    print("Src language: ", src_language)
+    target_language = config.current_category.default_target_language
+
     context = {
         'id': config.current_category_id,
-        'tableLen': table_list
+        'tableLen': table_list,
+        'src_language': src_language,
+        'target_language': target_language
     }
 
     if request.method == 'POST':
@@ -86,9 +92,8 @@ def add_set(request):
         current_user = request.user
         words_set = Set(user=current_user, category=config.current_category,
                         name=set_name)
-        # TODO Let user choose desired languages
-        src_language = SrcLanguage.objects.filter(name='Polish')[0]
-        target_language = TargetLanguage.objects.filter(name='English')[0]
+        # src_language = SrcLanguage.objects.filter(name='Polish')[0]
+        # target_language = TargetLanguage.objects.filter(name='English')[0]
 
         setup = Setup(set=words_set, src_language=src_language, target_language=target_language,
                       target_side='l', last_result=0, best_result=0)
@@ -119,11 +124,16 @@ def set_preview_list(request, pk):
     config.clean_up()
 
     words = Word.objects.filter(set=words_set)
+    setup = Setup.objects.filter(set=words_set)
+    src_language = setup[0].src_language
+    target_language = setup[0].target_language
 
     context = {
         'set': words_set,
         'words': words,
         'category_id': config.current_category_id,
+        'src_language': src_language,
+        'target_language': target_language
     }
 
     return render(request, 'intDictApp/words_preview.html', context)
