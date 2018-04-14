@@ -8,7 +8,7 @@ from .config import Config
 from .utils import *
 from django.views.generic import TemplateView, View
 from braces import views
-from .forms import LanguageForm
+from .forms import LanguageForm, CategoryForm
 
 config = Config()
 
@@ -42,32 +42,34 @@ def category_sets_list(request, pk):
 
 
 def add_category(request):
-    if request.method == 'POST':
-        category_name = request.POST['category_name']
-        def_src_lan = request.POST['def_src_lan']
-        def_target_lan = request.POST['def_target_lan']
 
-        src_language = SrcLanguage.objects.filter(user=request.user, name=def_src_lan)
-        target_language = TargetLanguage.objects.filter(user=request.user, name=def_target_lan)
+    if request.method == "POST":
 
-        category = Category(user=request.user, name=category_name,
-                            default_source_language=src_language[0],
-                            default_target_language=target_language[0])
-        category.save()
+        form = CategoryForm(request.POST, user=request.user)
 
-        return HttpResponseRedirect(reverse('categories'))
+        if form.is_valid():
+
+            category_name = request.POST['category_name']
+            def_src_lan_id = request.POST['src_language']
+            def_src_lan = SrcLanguage.objects.filter(id=def_src_lan_id)
+            def_target_lan_id = request.POST['target_language']
+            def_target_lan = TargetLanguage.objects.filter(id=def_target_lan_id)
+
+            category = Category(user=request.user, name=category_name,
+                                default_source_language=def_src_lan[0],
+                                default_target_language=def_target_lan[0])
+            category.save()
+
+            return HttpResponseRedirect(reverse('categories'))
     else:
-        src_languages = SrcLanguage.objects.filter(user=request.user)
-        target_languages = TargetLanguage.objects.filter(user=request.user)
-        src_languages_lst, target_languages_lst = \
-            convert_queryset_to_list_languages(src_languages, target_languages)
 
-        context = {
-            'src_languages': src_languages_lst,
-            'target_languages': target_languages_lst
-        }
+        form = CategoryForm(user=request.user)
 
-        return render(request, 'intDictApp/add_new_category.html', context)
+    context = {
+        'form': form
+    }
+
+    return render(request, "intDictApp/add_new_category.html", context)
 
 
 def add_set(request):
