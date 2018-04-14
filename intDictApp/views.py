@@ -77,7 +77,6 @@ def add_set(request):
     table_list = list(range(1, 11))
 
     src_language = config.current_category.default_source_language
-    print("Src language: ", src_language)
     target_language = config.current_category.default_target_language
 
     context = {
@@ -92,23 +91,27 @@ def add_set(request):
         current_user = request.user
         words_set = Set(user=current_user, category=config.current_category,
                         name=set_name)
-        # src_language = SrcLanguage.objects.filter(name='Polish')[0]
-        # target_language = TargetLanguage.objects.filter(name='English')[0]
 
         setup = Setup(set=words_set, src_language=src_language, target_language=target_language,
                       target_side='l', last_result=0, best_result=0)
         words_set.save()
         setup.save()
 
-        for i in table_list:
-            src_word = request.POST['srcLan' + str(i)]
-            target_word = request.POST['tarLan' + str(i)]
+        request_keys = request.POST.keys()
+        high_idx = find_highest_request_idx(request_keys)
+        # print("Highest idx: ", high_idx)
 
-            if src_word == '' or target_word == '':
-                continue
+        for i in range(1, high_idx + 1):
 
-            words = Word(set=words_set, src_word=src_word, target_word=target_word)
-            words.save()
+            if "srcLan" + str(i) in request.POST:
+                src_word = request.POST['srcLan' + str(i)]
+                target_word = request.POST['tarLan' + str(i)]
+
+                if src_word == '' or target_word == '':
+                    continue
+
+                words = Word(set=words_set, src_word=src_word, target_word=target_word)
+                words.save()
 
         return HttpResponseRedirect(reverse('category-sets-list', kwargs={'pk': context["id"]}))
     else:
@@ -152,6 +155,7 @@ class ExamInit(TemplateView):
         config.curr_corr_ans = words_to_show.target_word
         context = {
             'category': config.current_category,
+            'category_id': config.current_category_id,
             'set': config.current_set,
             'src_word': src_word,
             'word_idx_to_show': config.current_word_idx + 1,
@@ -179,7 +183,7 @@ class ExamCheck(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
         else:
             message = "WRONG, right answer is: " + config.curr_corr_ans
             config.assign_val_to_answers_list(shuffled_idx, 0)
-
+        print("Corr num: ", config.corr_ans_num)
         return self.render_json_response({"message": message})
 
 
@@ -195,11 +199,15 @@ class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
         # Set end
         if config.current_word_idx == config.size:
             result = int((float(config.corr_ans_num) / float(config.size)) * 100.0)
-            setup = Setup.objects.filter(set=config.current_set)[0]
+            print("End Corr ans num: ", config.corr_ans_num)
+            print("Result: ", result)
+            setup = Setup.objects.filter(set=config.current_set)
             if result > setup.best_result:
                 setup.best_result = result
 
+            setup = setup[0]
             setup.last_result = result
+            config.result = result
             setup.save()
 
             context = {
@@ -213,7 +221,6 @@ class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
 
             if config.is_check_clicked is False:
                 config.assign_val_to_answers_list(shuffled_idx, 0)
-                print(config.answers_list)
 
             config.is_check_clicked = False
 
@@ -235,12 +242,24 @@ def exam_summary(request):
     src_words, target_words = convert_queryset_to_list_words(words)
     setup = Setup.objects.filter(set=config.current_set)[0]
 
+    print("Current setup display: ", setup)
+
+    last_result = config.result
+    # TODO Database BUG
+    # last_result = setup.last_result
+    best_result = setup.best_result
+
+    print("Last result display: ", last_result)
+    print("Best result display: ", best_result)
+
     context = {
         'src_words': src_words,
         'target_words': target_words,
         'category': config.current_category,
         'set': config.current_set,
         'setup': setup,
+        'last_result': last_result,
+        'best_result': best_result,
         'answers_list': config.answers_list,
         'id': config.current_category_id
     }
@@ -258,8 +277,6 @@ def add_language(request):
 
         if form.is_valid():
 
-            print("Got to is valid.....")
-
             language_name = request.POST["language_name"]
             src_language = SrcLanguage(user=request.user, name=language_name)
             target_language = TargetLanguage(user=request.user, name=language_name)
@@ -276,17 +293,3 @@ def add_language(request):
     }
 
     return render(request, "intDictApp/add_language.html", context)
-
-
-# class AddLanguage(TemplateView):
-#
-#     template_name = "intDictApp/add_language.html"
-#
-#     def post(self, request):
-#         language_name = request.POST["language_name"]
-#         src_language = SrcLanguage(user=request.user, name=language_name)
-#         target_language = TargetLanguage(user=request.user, name=language_name)
-#         src_language.save()
-#         target_language.save()
-#
-#         return HttpResponseRedirect(reverse('categories'))

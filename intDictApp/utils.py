@@ -14,3 +14,16 @@ def convert_queryset_to_list_languages(src_languages, target_languages):
     target_languages_lst = list(target_languages)
 
     return src_languages_lst, target_languages_lst
+
+
+def find_highest_request_idx(keys):
+
+    high_idx = 0
+
+    for item in keys:
+        if item.startswith("srcLan"):
+            num = int(item[6:])
+            if num > high_idx:
+                high_idx = num
+
+    return high_idx

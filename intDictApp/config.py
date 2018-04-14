@@ -16,6 +16,7 @@ class Config:
     curr_corr_ans = ''
     answers_list = []
     is_check_clicked = False
+    result = None
 
     def create_shuffle_list(self, size):
 
@@ -32,6 +33,7 @@ class Config:
         self.curr_corr_ans = ''
         self.answers_list = []
         self.is_check_clicked = False
+        self.result = None
 
     def assign_val_to_answers_list(self, idx, value):
         self.answers_list[idx] = value

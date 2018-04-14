@@ -23,6 +23,12 @@ Translate word: <span id="src_word">{{src_word}}</span>
 
 <div id="succ_or_fail" class="answer_list" ></div>
 
+<br><br>
+
+<a href="{% url 'category-sets-list' category_id %}">
+<button>Cancel</button>
+</a>
+
 <script type="text/javascript">
 
     var curr_word_num = 0;
