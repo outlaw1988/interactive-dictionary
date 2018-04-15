@@ -1,0 +1,112 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h3>Exam is performing for category: {{category.name}}, set: {{set.name}}</h3>
+
+
+<br><br>
+
+<span id="curr_word_num">{{word_idx_to_show}}</span>/{{size}}
+
+<br><br>
+
+Translate word: <span id="src_word">{{src_word}}</span>
+
+<br><br>
+
+<input type="text" name="answer" id="answer" autofocus/>
+<button type="button" onclick="check_word()" id="check-button">Check</button>
+<button type="button" onclick="next_word()" id="next-button">Next</button>
+
+<br><br>
+
+<div id="succ_or_fail" class="answer_list" ></div>
+
+<br><br>
+
+<a href="{% url 'category-sets-list' category_id %}">
+<button>Cancel</button>
+</a>
+
+<script type="text/javascript">
+
+    var curr_word_num = 0;
+    var size = {{size}};
+
+    var check_word = function () {
+        console.log("Check word called...");
+        document.getElementById("answer").disabled = true;
+
+        var url = "{% url 'exam-check' %}";
+        var data = {
+            "answer": $("#answer").val(),
+        }
+
+        var json = JSON.stringify(data);
+
+        $.post(url, json).then(function (response) {
+            console.log('success', response);
+            document.getElementById("succ_or_fail").innerHTML = response.message;
+
+        }, function (response) {
+            console.log('error', response);
+        });
+    }
+
+    var next_word = function() {
+        console.log("Next word called...");
+
+        document.getElementById("answer").disabled = false;
+        document.getElementById("succ_or_fail").innerHTML = "";
+        document.getElementById("answer").value = "";
+        document.getElementById("answer").focus();
+
+        var url = "{% url 'exam-next' %}";
+        var data = {
+            "request": "",
+        }
+
+        var json = JSON.stringify(data);
+
+        if (curr_word_num == (size - 1)) {
+            summary_url = "{% url 'exam-summary' %}";
+
+            $.post(url, json).then(function (response) {
+                // empty
+            });
+
+            load_url(summary_url);
+        }
+        else if (curr_word_num < (size - 1)) {
+            $.post(url, json).then(function (response) {
+                curr_word_num += 1
+                //console.log(response);
+                document.getElementById("curr_word_num").innerHTML = response.word_idx_to_show;
+                document.getElementById("src_word").innerHTML = response.src_word;
+            });
+        }
+
+    }
+
+    window.onkeyup = function(e) {
+        var key = e.keyCode ? e.keyCode : e.which;
+
+        // enter
+        if (key == 13) {
+            check_word();
+        // control
+        }else if (key == 17) {
+            next_word();
+        }
+
+    }
+
+    function load_url(new_location) {
+        window.location = new_location;
+        return false;
+    }
+
+</script>
+
+{% endblock %}

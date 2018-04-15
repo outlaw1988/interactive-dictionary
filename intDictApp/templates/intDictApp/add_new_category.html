@@ -1,0 +1,13 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<form action="" method="post">
+  {% csrf_token %}
+  <table>
+    {{ form }}
+  </table>
+  <input type="submit" value="Apply"/>
+</form>
+<a href="{% url 'categories' %}">Go back</a>
+{% endblock %}

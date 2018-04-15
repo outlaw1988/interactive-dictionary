@@ -1,0 +1,23 @@
+.sidebar-nav {
+    margin-top: 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.words-list-header {
+    text-align: center;
+}
+
+.table-headers {
+    text-align: center;
+}
+
+.tables {
+    width: 50%;
+    margin-left: 25%;
+    margin-right: 25%;
+}
+
+.table-words {
+    text-align: center;
+}
