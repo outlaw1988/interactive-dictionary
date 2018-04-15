@@ -202,10 +202,10 @@ class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
             print("End Corr ans num: ", config.corr_ans_num)
             print("Result: ", result)
             setup = Setup.objects.filter(set=config.current_set)
+            setup = setup[0]
             if result > setup.best_result:
                 setup.best_result = result
-
-            setup = setup[0]
+            
             setup.last_result = result
             config.result = result
             setup.save()
