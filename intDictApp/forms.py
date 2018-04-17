@@ -2,7 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
-from .models import SrcLanguage, TargetLanguage, Category
+from .models import SrcLanguage, TargetLanguage, Category, Set
 
 
 class CategoryForm(forms.Form):
@@ -10,7 +10,6 @@ class CategoryForm(forms.Form):
     def __init__(self, *args, **kwargs):
 
         self.user = kwargs.pop("user")
-        print("User: ", self.user)
         super(CategoryForm, self).__init__(*args, **kwargs)
 
         self.fields['category_name'] = forms.CharField(max_length=100,
@@ -25,6 +24,14 @@ class CategoryForm(forms.Form):
         self.fields['target_language'] = forms.ModelChoiceField(queryset=target_languages)
         self.fields['target_language'].label = "Default target language"
 
+        sides = (
+            ('left', 'left'),
+            ('right', 'right')
+        )
+
+        self.fields['def_target_side'] = forms.ChoiceField(choices=sides)
+        self.fields['def_target_side'].label = "Default target side"
+
     def clean_category_name(self):
         category_name = self.cleaned_data['category_name']
         category_to_check = Category.objects.filter(user=self.user, name=category_name)
@@ -38,6 +45,49 @@ class CategoryForm(forms.Form):
 
         if src_language.name == target_language.name:
             raise ValidationError("Languages are the same!")
+
+
+class SetForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        self.category_name = kwargs.pop('category')
+        super(SetForm, self).__init__(*args, **kwargs)
+        self.fields['set_name'] = forms.CharField(max_length=100,
+                                                  help_text="Please enter set name")
+        self.fields['set_name'].label = "Set name"
+
+        category = Category.objects.filter(user=self.user, name=self.category_name)[0]
+        src_lan = category.default_source_language.name
+        target_lan = category.default_target_language.name
+        target_side = category.default_target_side
+        source_side = ""
+
+        if target_side == 'left':
+            # target_side = "left"
+            source_side = "right"
+        elif target_side == 'right':
+            # target_side = "right"
+            source_side = "left"
+
+        languages = (
+            (target_lan, target_lan),
+            (src_lan, src_lan))
+
+        self.fields['target_language'] = forms.ChoiceField(choices=languages)
+
+        sides = (
+            (target_side, target_side),
+            (source_side, source_side))
+
+        self.fields['target_side'] = forms.ChoiceField(choices=sides)
+
+    # def clean_set_name(self):
+    #     set_name = self.cleaned_data['set_name']
+    #     set_to_check = Set.objects.filter(user=self.user, name=set_name, category=self.category)
+    #
+    #     if set_to_check.count() > 0:
+    #         raise ValidationError("This set, within selected category, already exists!")
 
 
 class LanguageForm(forms.Form):
@@ -60,15 +110,3 @@ class LanguageForm(forms.Form):
             raise ValidationError('This language already exists!')
 
         return name
-
-# class LanguageForm(ModelForm):
-#
-#     def validate_unique(self):
-#         pass
-#
-#     class Meta:
-#         model = SrcLanguage
-#         fields = ['name', ]
-#         labels = {'name': _('Language name'), }
-#         help_texts = {'name': _("Please enter language name")}
-

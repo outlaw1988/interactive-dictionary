@@ -8,7 +8,7 @@ from .config import Config
 from .utils import *
 from django.views.generic import TemplateView, View
 from braces import views
-from .forms import LanguageForm, CategoryForm
+from .forms import LanguageForm, CategoryForm, SetForm
 
 config = Config()
 
@@ -48,16 +48,17 @@ def add_category(request):
         form = CategoryForm(request.POST, user=request.user)
 
         if form.is_valid():
-
             category_name = request.POST['category_name']
             def_src_lan_id = request.POST['src_language']
             def_src_lan = SrcLanguage.objects.filter(id=def_src_lan_id)
             def_target_lan_id = request.POST['target_language']
             def_target_lan = TargetLanguage.objects.filter(id=def_target_lan_id)
+            def_target_side = request.POST['def_target_side']
 
             category = Category(user=request.user, name=category_name,
                                 default_source_language=def_src_lan[0],
-                                default_target_language=def_target_lan[0])
+                                default_target_language=def_target_lan[0],
+                                default_target_side=def_target_side)
             category.save()
 
             return HttpResponseRedirect(reverse('categories'))
@@ -76,24 +77,44 @@ def add_set(request):
 
     table_list = list(range(1, 11))
 
-    src_language = config.current_category.default_source_language
-    target_language = config.current_category.default_target_language
+    def_src_language = config.current_category.default_source_language
+    def_target_language = config.current_category.default_target_language
+    target_side = config.current_category.default_target_side
 
+    form = SetForm(user=request.user, category=config.current_category)
+    print("Target side before view: ", target_side)
     context = {
         'id': config.current_category_id,
         'tableLen': table_list,
-        'src_language': src_language,
-        'target_language': target_language
+        'src_language': def_src_language,
+        'target_language': def_target_language,
+        'target_side': target_side,
+        'form': form
     }
 
     if request.method == 'POST':
-        set_name = request.POST['set_name_2']
+        set_name = request.POST['set_name']
         current_user = request.user
         words_set = Set(user=current_user, category=config.current_category,
                         name=set_name)
 
+        target_language = request.POST['target_language']
+        src_language = ""
+
+        if target_language == def_target_language:
+            target_language = TargetLanguage.objects.filter(user=current_user,
+                                                            name=def_target_language)[0]
+            src_language = SrcLanguage.objects.filter(user=current_user, name=def_src_language)[0]
+        else:
+            target_language = TargetLanguage.objects.filter(user=current_user,
+                                                            name=def_src_language)[0]
+            src_language = SrcLanguage.objects.filter(user=current_user, 
+                                                      name=def_target_language)[0]
+
+        target_side = request.POST['target_side']
+
         setup = Setup(set=words_set, src_language=src_language, target_language=target_language,
-                      target_side='l', last_result=0, best_result=0)
+                      target_side=target_side, last_result=0, best_result=0)
         words_set.save()
         setup.save()
 
@@ -103,9 +124,16 @@ def add_set(request):
 
         for i in range(1, high_idx + 1):
 
-            if "srcLan" + str(i) in request.POST:
-                src_word = request.POST['srcLan' + str(i)]
-                target_word = request.POST['tarLan' + str(i)]
+            if "left_field" + str(i) in request.POST:
+                src_word = ""
+                target_word = ""
+
+                if target_side == "left":
+                    src_word = request.POST['right_field' + str(i)]
+                    target_word = request.POST['left_field' + str(i)]
+                elif target_side == "right":
+                    src_word = request.POST['left_field' + str(i)]
+                    target_word = request.POST['right_field' + str(i)]
 
                 if src_word == '' or target_word == '':
                     continue

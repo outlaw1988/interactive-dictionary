@@ -4,7 +4,8 @@ from .models import Category, Set, SrcLanguage, TargetLanguage, Setup, Word
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user')
+    list_display = ('name', 'user', 'default_source_language', 'default_target_language',
+                    'default_target_side')
 
 
 @admin.register(Set)
