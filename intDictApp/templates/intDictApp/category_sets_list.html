@@ -7,7 +7,9 @@
     {% for set in sets %}
 
       <form method="post">
-          <li><a href="{{ set.get_absolute_url }}">{{set.name}}</a></li>
+          <li><a href="{{ set.get_absolute_url }}">{{set.name}}</a>
+            <a href="{{ set.get_edit_url }}">edit</a>
+          </li>
       </form>
 
     {% endfor %}

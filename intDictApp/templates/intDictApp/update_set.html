@@ -1,0 +1,63 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<form action = "" method="post">
+    {% csrf_token %}
+    <br>
+    <label for="set_name">Set name:</label><br />
+    <input type="text" name="set_name" id="set_name" value="{{set_name}}"/>
+    <br><br>
+
+    <table id="set_def_table" class="tables">
+      <tr>
+        <th class="table-headers">Source language</th>
+        <th class="table-headers">Target language</th>
+      </tr>
+        <tr>
+        <th class="table-headers">{{src_language}}</th>
+        <th class="table-headers">{{target_language}}</th>
+      </tr>
+
+        {% for word in words %}
+            <tr>
+                <td class="table-words"><input type="text" name="srcLan{{forloop.counter}}" id="srcLan{{forloop.counter}}" value="{{word.src_word}}"/></td>
+                <td class="table-words"><input type="text" name="tarLan{{forloop.counter}}" id="tarLan{{forloop.counter}}" value="{{word.target_word}}"/> <img src="../../static/images/remove_icon_res.png" onclick="remove_words(this)"></td>
+            </tr>
+        {% endfor %}
+
+    </table>
+    <br><br>
+    <button type="button" onclick="add_word()">Add word</button>
+    <br><br>
+    <input type="submit" name="apply" value="Apply" />
+</form>
+
+<a href="{% url 'category-sets-list' id %}">Go Back</a>
+
+<script language="javascript" type="text/javascript">
+    var idx = {{size}} + 1;
+
+    function add_word() {
+        console.log(idx);
+        var table = document.getElementById("set_def_table");
+        var row = table.insertRow(-1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<input type='text' name='srcLan" + idx + "' id='srcLan" + idx + "'/>";
+        cell1.align = "center";
+        cell2.innerHTML = "<input type='text' name='tarLan" + idx + "' id='tarLan" + idx + "'/>";
+        cell2.innerHTML += " <img src='../../static/images/remove_icon_res.png' onclick='remove_words(this)'>"
+        cell2.align = "center";
+
+        idx += 1;
+    }
+
+    function remove_words(btn) {
+        var row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+
+</script>
+
+{% endblock %}

@@ -12,5 +12,6 @@ urlpatterns = [
     path('exam_check', views.ExamCheck.as_view(), name='exam-check'),
     path('exam_next', views.ExamNext.as_view(), name='exam-next'),
     path('exam_summary', views.exam_summary, name='exam-summary'),
-    path('add_language', views.add_language, name='add-language')
+    path('add_language', views.add_language, name='add-language'),
+    path('update_set/<uuid:pk>', views.UpdateSet.as_view(), name='update-set')
 ]

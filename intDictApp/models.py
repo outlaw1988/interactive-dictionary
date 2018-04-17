@@ -39,6 +39,9 @@ class Set(models.Model):
     def get_absolute_url(self):
         return reverse('set-preview-list', args=[str(self.id)])
 
+    def get_edit_url(self):
+        return reverse('update-set', args=[str(self.id)])
+
 
 class SrcLanguage(models.Model):
 

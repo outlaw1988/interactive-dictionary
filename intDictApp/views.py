@@ -118,6 +118,61 @@ def add_set(request):
         return render(request, 'intDictApp/add_new_set.html', context)
 
 
+class UpdateSet(TemplateView):
+    template_name = 'intDictApp/update_set.html'
+
+    def get_context_data(self, **kwargs):
+        set = Set.objects.filter(id=self.kwargs['pk'])[0]  # pk - uuid
+        config.current_set = set
+        config.current_set_id = set.id
+
+        words = Word.objects.filter(set=config.current_set)
+        src_language = config.current_category.default_source_language
+        target_language = config.current_category.default_target_language
+
+        set_name = config.current_set.name
+        size = len(words)
+
+        context = {
+            'set_name': set_name,
+            'src_language': src_language,
+            'target_language': target_language,
+            'words': words,
+            'id': config.current_category_id,
+            'size': size
+        }
+
+        return context
+
+    def post(self, request, **kwargs):
+        print(request.POST)
+        set_name = request.POST['set_name']
+
+        words_set = config.current_set
+        words_set.name = set_name
+        words_set.save()
+
+        request_keys = request.POST.keys()
+        high_idx = find_highest_request_idx(request_keys)
+
+        # clean up
+        Word.objects.filter(set=words_set).delete()
+
+        for i in range(1, high_idx + 1):
+
+            if "srcLan" + str(i) in request.POST:
+                src_word = request.POST['srcLan' + str(i)]
+                target_word = request.POST['tarLan' + str(i)]
+
+                if src_word == '' or target_word == '':
+                    continue
+
+                words = Word(set=words_set, src_word=src_word, target_word=target_word)
+                words.save()
+
+        return HttpResponseRedirect(reverse('category-sets-list', kwargs={'pk': config.current_category_id}))
+
+
 def set_preview_list(request, pk):
     # pk - set UUID
     words_set = Set.objects.filter(id=pk)[0]
@@ -183,7 +238,7 @@ class ExamCheck(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
         else:
             message = "WRONG, right answer is: " + config.curr_corr_ans
             config.assign_val_to_answers_list(shuffled_idx, 0)
-        print("Corr num: ", config.corr_ans_num)
+        # print("Corr num: ", config.corr_ans_num)
         return self.render_json_response({"message": message})
 
 
@@ -199,8 +254,8 @@ class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
         # Set end
         if config.current_word_idx == config.size:
             result = int((float(config.corr_ans_num) / float(config.size)) * 100.0)
-            print("End Corr ans num: ", config.corr_ans_num)
-            print("Result: ", result)
+            # print("End Corr ans num: ", config.corr_ans_num)
+            # print("Result: ", result)
             setup = Setup.objects.filter(set=config.current_set)
             setup = setup[0]
             if result > setup.best_result:
@@ -242,15 +297,15 @@ def exam_summary(request):
     src_words, target_words = convert_queryset_to_list_words(words)
     setup = Setup.objects.filter(set=config.current_set)[0]
 
-    print("Current setup display: ", setup)
+    # print("Current setup display: ", setup)
 
     last_result = config.result
     # TODO Database BUG
     # last_result = setup.last_result
     best_result = setup.best_result
 
-    print("Last result display: ", last_result)
-    print("Best result display: ", best_result)
+    # print("Last result display: ", last_result)
+    # print("Best result display: ", best_result)
 
     context = {
         'src_words': src_words,
