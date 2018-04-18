@@ -35,7 +35,7 @@ Translate word: <span id="src_word">{{src_word}}</span>
     var size = {{size}};
 
     var check_word = function () {
-        console.log("Check word called...");
+        //console.log("Check word called...");
         document.getElementById("answer").disabled = true;
 
         var url = "{% url 'exam-check' %}";
@@ -46,8 +46,15 @@ Translate word: <span id="src_word">{{src_word}}</span>
         var json = JSON.stringify(data);
 
         $.post(url, json).then(function (response) {
-            console.log('success', response);
-            document.getElementById("succ_or_fail").innerHTML = response.message;
+            //console.log('success', response);
+            if (response.message == "OK") {
+                document.getElementById("succ_or_fail").innerHTML = response.message;
+                document.getElementById("succ_or_fail").style.color = 'green'
+            }
+            else {
+                document.getElementById("succ_or_fail").innerHTML = response.message;
+                document.getElementById("succ_or_fail").style.color = 'red'
+            }
 
         }, function (response) {
             console.log('error', response);
@@ -55,7 +62,7 @@ Translate word: <span id="src_word">{{src_word}}</span>
     }
 
     var next_word = function() {
-        console.log("Next word called...");
+        //console.log("Next word called...");
 
         document.getElementById("answer").disabled = false;
         document.getElementById("succ_or_fail").innerHTML = "";

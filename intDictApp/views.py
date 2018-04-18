@@ -216,7 +216,7 @@ class UpdateSet(TemplateView):
         request_keys = request.POST.keys()
         high_idx = find_highest_request_idx(request_keys)
         # print("Highest idx: ", high_idx)
-        print(request.POST)
+
         # clean up
         Word.objects.filter(set=words_set).delete()
 
