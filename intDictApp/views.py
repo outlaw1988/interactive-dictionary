@@ -44,7 +44,6 @@ def category_sets_list(request, pk):
 def add_category(request):
 
     if request.method == "POST":
-
         form = CategoryForm(request.POST, user=request.user)
 
         if form.is_valid():

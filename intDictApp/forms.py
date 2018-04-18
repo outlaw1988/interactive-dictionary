@@ -1,7 +1,5 @@
 from django import forms
-from django.forms import ModelForm
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
 from .models import SrcLanguage, TargetLanguage, Category, Set, Setup
 
 
@@ -39,11 +37,11 @@ class CategoryForm(forms.Form):
             raise ValidationError("This category already exists!")
 
     def clean(self):
-        src_language = self.cleaned_data['src_language']
-        target_language = self.cleaned_data['target_language']
-
-        if src_language.name == target_language.name:
-            raise ValidationError("Languages are the same!")
+        if ("src_language" in self.cleaned_data) and ("target_language" in self.cleaned_data):
+            src_language = self.cleaned_data['src_language']
+            target_language = self.cleaned_data['target_language']
+            if src_language.name == target_language.name:
+                raise ValidationError("Languages are the same!")
 
 
 class SetForm(forms.Form):

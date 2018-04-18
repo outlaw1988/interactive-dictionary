@@ -21,3 +21,8 @@
 .table-words {
     text-align: center;
 }
+
+.form-table {
+    border-spacing: 15px;
+    border-collapse: separate;
+}
