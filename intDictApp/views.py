@@ -8,7 +8,7 @@ from .config import Config
 from .utils import *
 from django.views.generic import TemplateView, View
 from braces import views
-from .forms import LanguageForm, CategoryForm, SetForm
+from .forms import LanguageForm, CategoryForm, SetForm, SetFormUpdate
 
 config = Config()
 
@@ -82,7 +82,6 @@ def add_set(request):
     target_side = config.current_category.default_target_side
 
     form = SetForm(user=request.user, category=config.current_category)
-    print("Target side before view: ", target_side)
     context = {
         'id': config.current_category_id,
         'tableLen': table_list,
@@ -108,7 +107,7 @@ def add_set(request):
         else:
             target_language = TargetLanguage.objects.filter(user=current_user,
                                                             name=def_src_language)[0]
-            src_language = SrcLanguage.objects.filter(user=current_user, 
+            src_language = SrcLanguage.objects.filter(user=current_user,
                                                       name=def_target_language)[0]
 
         target_side = request.POST['target_side']
@@ -155,42 +154,84 @@ class UpdateSet(TemplateView):
         config.current_set_id = set.id
 
         words = Word.objects.filter(set=config.current_set)
-        src_language = config.current_category.default_source_language
-        target_language = config.current_category.default_target_language
+
+        setup = Setup.objects.filter(set=config.current_set)[0]
+        src_language = setup.src_language.name
+        target_language = setup.target_language.name
+        target_side = setup.target_side
 
         set_name = config.current_set.name
         size = len(words)
+
+        form = SetFormUpdate(user=self.request.user, set=set)
 
         context = {
             'set_name': set_name,
             'src_language': src_language,
             'target_language': target_language,
+            'target_side': target_side,
             'words': words,
             'id': config.current_category_id,
-            'size': size
+            'size': size,
+            'form': form
         }
 
         return context
 
     def post(self, request, **kwargs):
-        print(request.POST)
-        set_name = request.POST['set_name']
 
+        set_name = request.POST['set_name']
+        current_user = request.user
+
+        # Changing set name
         words_set = config.current_set
         words_set.name = set_name
         words_set.save()
 
+        # Setup
+        setup = Setup.objects.filter(set=words_set)[0]
+
+        target_language = request.POST['target_language']
+        src_language = ""
+
+        if target_language == setup.target_language.name:
+            target_language = TargetLanguage.objects.filter(user=current_user,
+                                                            name=setup.target_language.name)[0]
+            src_language = SrcLanguage.objects.filter(user=current_user,
+                                                      name=setup.src_language.name)[0]
+        else:
+            target_language = TargetLanguage.objects.filter(user=current_user,
+                                                            name=setup.src_language.name)[0]
+            src_language = SrcLanguage.objects.filter(user=current_user,
+                                                      name=setup.target_language.name)[0]
+
+        setup.src_language = src_language
+        setup.target_language = target_language
+
+        target_side = request.POST['target_side']
+        setup.target_side = target_side
+        setup.save()
+        # End setup
+
         request_keys = request.POST.keys()
         high_idx = find_highest_request_idx(request_keys)
-
+        # print("Highest idx: ", high_idx)
+        print(request.POST)
         # clean up
         Word.objects.filter(set=words_set).delete()
 
         for i in range(1, high_idx + 1):
 
-            if "srcLan" + str(i) in request.POST:
-                src_word = request.POST['srcLan' + str(i)]
-                target_word = request.POST['tarLan' + str(i)]
+            if "left_field" + str(i) in request.POST:
+                src_word = ""
+                target_word = ""
+
+                if target_side == "left":
+                    src_word = request.POST['right_field' + str(i)]
+                    target_word = request.POST['left_field' + str(i)]
+                elif target_side == "right":
+                    src_word = request.POST['left_field' + str(i)]
+                    target_word = request.POST['right_field' + str(i)]
 
                 if src_word == '' or target_word == '':
                     continue
@@ -198,7 +239,36 @@ class UpdateSet(TemplateView):
                 words = Word(set=words_set, src_word=src_word, target_word=target_word)
                 words.save()
 
-        return HttpResponseRedirect(reverse('category-sets-list', kwargs={'pk': config.current_category_id}))
+        return HttpResponseRedirect(reverse('category-sets-list',
+                                            kwargs={'pk': config.current_category_id}))
+
+    # def post(self, request, **kwargs):
+    #     print(request.POST)
+    #     set_name = request.POST['set_name']
+    #
+    #     words_set = config.current_set
+    #     words_set.name = set_name
+    #     words_set.save()
+    #
+    #     request_keys = request.POST.keys()
+    #     high_idx = find_highest_request_idx(request_keys)
+    #
+    #     # clean up
+    #     Word.objects.filter(set=words_set).delete()
+    #
+    #     for i in range(1, high_idx + 1):
+    #
+    #         if "srcLan" + str(i) in request.POST:
+    #             src_word = request.POST['srcLan' + str(i)]
+    #             target_word = request.POST['tarLan' + str(i)]
+    #
+    #             if src_word == '' or target_word == '':
+    #                 continue
+    #
+    #             words = Word(set=words_set, src_word=src_word, target_word=target_word)
+    #             words.save()
+    #
+    #     return HttpResponseRedirect(reverse('category-sets-list', kwargs={'pk': config.current_category_id}))
 
 
 def set_preview_list(request, pk):
