@@ -15,6 +15,12 @@ class Category(models.Model):
                                                 null=True)
     default_target_language = models.ForeignKey('TargetLanguage', on_delete=models.SET_NULL,
                                                 null=True)
+    sides = (
+        ('left', 'left'),
+        ('right', 'right'))
+
+    default_target_side = models.CharField(max_length=5, choices=sides, default='left',
+                                           help_text="Target language default side")
 
     def __str__(self):
         return self.name
@@ -73,11 +79,10 @@ class Setup(models.Model):
                                         null=True)
 
     sides = (
-        ('l', 'left'),
-        ('r', 'right')
-    )
+        ('left', 'left'),
+        ('right', 'right'))
 
-    target_side = models.CharField(max_length=1, choices=sides, default='l',
+    target_side = models.CharField(max_length=5, choices=sides, default='left',
                                    help_text="Target language side")
     last_result = models.IntegerField(default=0)
     best_result = models.IntegerField(default=0)

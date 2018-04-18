@@ -5,58 +5,131 @@
 <form action = "" method="post">
     {% csrf_token %}
     <br>
-    <label for="set_name">Set name:</label><br />
-    <input type="text" name="set_name" id="set_name" value="{{set_name}}"/>
+    {{form.set_name.label_tag}} {{form.set_name}}
+    <br><br>
+    {{form.target_language.label_tag}} {{form.target_language}}
+    {{form.target_side.label_tag}} {{form.target_side}}
+    <!-- <label for="set_name">Set name:</label><br />
+    <input type="text" name="set_name" id="set_name" value="{{set_name}}"/> -->
     <br><br>
 
     <table id="set_def_table" class="tables">
       <tr>
-        <th class="table-headers">Source language</th>
-        <th class="table-headers">Target language</th>
+        <th class="table-headers">
+          <span id="left-label">{% if target_side == 'left' %} Target language {% else %} Source language {% endif %}</span>
+        </th>
+        <th class="table-headers">
+          <span id="right-label">{% if target_side == 'left' %} Source language {% else %} Target language {% endif %}</span>
+        </th>
       </tr>
-        <tr>
-        <th class="table-headers">{{src_language}}</th>
-        <th class="table-headers">{{target_language}}</th>
+      <tr>
+        <th class="table-headers">
+          <span id="left-lan">{% if target_side == 'left' %} {{target_language}} {% else %} {{src_language}} {% endif %}</span>
+        </th>
+        <th class="table-headers">
+          <span id="right-lan">{% if target_side == 'left' %} {{src_language}} {% else %} {{target_language}} {% endif %}</span>
+        </th>
       </tr>
 
         {% for word in words %}
             <tr>
-                <td class="table-words"><input type="text" name="srcLan{{forloop.counter}}" id="srcLan{{forloop.counter}}" value="{{word.src_word}}"/></td>
-                <td class="table-words"><input type="text" name="tarLan{{forloop.counter}}" id="tarLan{{forloop.counter}}" value="{{word.target_word}}"/> <img src="../../static/images/remove_icon_res.png" onclick="remove_words(this)"></td>
+              {% if target_side == 'left' %}
+                <td class="table-words"><input type="text" name="left_field{{forloop.counter}}" id="left_field{{forloop.counter}}" value="{{word.target_word}}"/></td>
+                <td class="table-words"><input type="text" name="right_field{{forloop.counter}}" id="right_field{{forloop.counter}}" value="{{word.src_word}}"/> <img src="../../static/images/remove_icon_res.png" onclick="remove_words(this)"></td>
+              {% else %}
+                <td class="table-words"><input type="text" name="left_field{{forloop.counter}}" id="left_field{{forloop.counter}}" value="{{word.src_word}}"/></td>
+                <td class="table-words"><input type="text" name="right_field{{forloop.counter}}" id="right_field{{forloop.counter}}" value="{{word.target_word}}"/> <img src="../../static/images/remove_icon_res.png" onclick="remove_words(this)"></td>
+              {% endif %}
             </tr>
         {% endfor %}
-
     </table>
+
     <br><br>
     <button type="button" onclick="add_word()">Add word</button>
     <br><br>
     <input type="submit" name="apply" value="Apply" />
+
 </form>
 
 <a href="{% url 'category-sets-list' id %}">Go Back</a>
 
 <script language="javascript" type="text/javascript">
-    var idx = {{size}} + 1;
+    var idx = {{size}};
+    var curr_target_side = "{{target_side}}";
+    var curr_target_lan = "{{target_language}}";
+    var curr_source_lan = "{{src_language}}";
 
     function add_word() {
-        console.log(idx);
+        idx += 1;
+        //console.log(idx);
         var table = document.getElementById("set_def_table");
         var row = table.insertRow(-1);
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<input type='text' name='srcLan" + idx + "' id='srcLan" + idx + "'/>";
+        cell1.innerHTML = "<input type='text' name='left_field" + idx + "' id='left_field" + idx + "'/>";
         cell1.align = "center";
-        cell2.innerHTML = "<input type='text' name='tarLan" + idx + "' id='tarLan" + idx + "'/>";
+        cell2.innerHTML = "<input type='text' name='right_field" + idx + "' id='right_field" + idx + "'/>";
         cell2.innerHTML += " <img src='../../static/images/remove_icon_res.png' onclick='remove_words(this)'>"
         cell2.align = "center";
-
-        idx += 1;
     }
 
     function remove_words(btn) {
         var row = btn.parentNode.parentNode;
         row.parentNode.removeChild(row);
     }
+
+    function swap_fields() {
+        for (var i = 1; i <= idx; i++) {
+            var check = document.getElementById("left_field" + i);
+            if (check) {
+                // swapping
+                temp = document.getElementById("left_field" + i).value;
+                document.getElementById("left_field" + i).value = document.getElementById("right_field" + i).value;
+                document.getElementById("right_field" + i).value = temp;
+            }
+        }
+    }
+
+    $('#{{form.target_language.auto_id}}').on('change', function (e) {
+        //var option_selected = $("option:selected", this);
+        //var value_selected = this.value;
+        //swapping
+        var temp = curr_target_lan;
+        curr_target_lan = curr_source_lan;
+        curr_source_lan = temp;
+
+        if (curr_target_side == "left") {
+            document.getElementById("left-lan").innerHTML = curr_target_lan;
+            document.getElementById("right-lan").innerHTML = curr_source_lan;
+        }
+        else if (curr_target_side == "right") {
+          document.getElementById("left-lan").innerHTML = curr_source_lan;
+          document.getElementById("right-lan").innerHTML = curr_target_lan;
+        }
+
+        swap_fields();
+    });
+
+    $('#{{form.target_side.auto_id}}').on('change', function (e) {
+        curr_target_side = this.value;
+
+        if (curr_target_side == "left") {
+            document.getElementById("left-label").innerHTML = "Target language";
+            document.getElementById("right-label").innerHTML = "Source language";
+
+            document.getElementById("left-lan").innerHTML = curr_target_lan;
+            document.getElementById("right-lan").innerHTML = curr_source_lan;
+        }
+        else if (curr_target_side == "right") {
+          document.getElementById("left-label").innerHTML = "Source language";
+          document.getElementById("right-label").innerHTML = "Target language";
+
+          document.getElementById("left-lan").innerHTML = curr_source_lan;
+          document.getElementById("right-lan").innerHTML = curr_target_lan;
+        }
+
+        swap_fields();
+    });
 
 </script>
 

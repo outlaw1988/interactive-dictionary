@@ -8,7 +8,7 @@ from .config import Config
 from .utils import *
 from django.views.generic import TemplateView, View
 from braces import views
-from .forms import LanguageForm, CategoryForm
+from .forms import LanguageForm, CategoryForm, SetForm, SetFormUpdate
 
 config = Config()
 
@@ -48,16 +48,17 @@ def add_category(request):
         form = CategoryForm(request.POST, user=request.user)
 
         if form.is_valid():
-
             category_name = request.POST['category_name']
             def_src_lan_id = request.POST['src_language']
             def_src_lan = SrcLanguage.objects.filter(id=def_src_lan_id)
             def_target_lan_id = request.POST['target_language']
             def_target_lan = TargetLanguage.objects.filter(id=def_target_lan_id)
+            def_target_side = request.POST['def_target_side']
 
             category = Category(user=request.user, name=category_name,
                                 default_source_language=def_src_lan[0],
-                                default_target_language=def_target_lan[0])
+                                default_target_language=def_target_lan[0],
+                                default_target_side=def_target_side)
             category.save()
 
             return HttpResponseRedirect(reverse('categories'))
@@ -76,24 +77,43 @@ def add_set(request):
 
     table_list = list(range(1, 11))
 
-    src_language = config.current_category.default_source_language
-    target_language = config.current_category.default_target_language
+    def_src_language = config.current_category.default_source_language
+    def_target_language = config.current_category.default_target_language
+    target_side = config.current_category.default_target_side
 
+    form = SetForm(user=request.user, category=config.current_category)
     context = {
         'id': config.current_category_id,
         'tableLen': table_list,
-        'src_language': src_language,
-        'target_language': target_language
+        'src_language': def_src_language,
+        'target_language': def_target_language,
+        'target_side': target_side,
+        'form': form
     }
 
     if request.method == 'POST':
-        set_name = request.POST['set_name_2']
+        set_name = request.POST['set_name']
         current_user = request.user
         words_set = Set(user=current_user, category=config.current_category,
                         name=set_name)
 
+        target_language = request.POST['target_language']
+        src_language = ""
+
+        if target_language == def_target_language:
+            target_language = TargetLanguage.objects.filter(user=current_user,
+                                                            name=def_target_language)[0]
+            src_language = SrcLanguage.objects.filter(user=current_user, name=def_src_language)[0]
+        else:
+            target_language = TargetLanguage.objects.filter(user=current_user,
+                                                            name=def_src_language)[0]
+            src_language = SrcLanguage.objects.filter(user=current_user,
+                                                      name=def_target_language)[0]
+
+        target_side = request.POST['target_side']
+
         setup = Setup(set=words_set, src_language=src_language, target_language=target_language,
-                      target_side='l', last_result=0, best_result=0)
+                      target_side=target_side, last_result=0, best_result=0)
         words_set.save()
         setup.save()
 
@@ -103,9 +123,16 @@ def add_set(request):
 
         for i in range(1, high_idx + 1):
 
-            if "srcLan" + str(i) in request.POST:
-                src_word = request.POST['srcLan' + str(i)]
-                target_word = request.POST['tarLan' + str(i)]
+            if "left_field" + str(i) in request.POST:
+                src_word = ""
+                target_word = ""
+
+                if target_side == "left":
+                    src_word = request.POST['right_field' + str(i)]
+                    target_word = request.POST['left_field' + str(i)]
+                elif target_side == "right":
+                    src_word = request.POST['left_field' + str(i)]
+                    target_word = request.POST['right_field' + str(i)]
 
                 if src_word == '' or target_word == '':
                     continue
@@ -127,42 +154,84 @@ class UpdateSet(TemplateView):
         config.current_set_id = set.id
 
         words = Word.objects.filter(set=config.current_set)
-        src_language = config.current_category.default_source_language
-        target_language = config.current_category.default_target_language
+
+        setup = Setup.objects.filter(set=config.current_set)[0]
+        src_language = setup.src_language.name
+        target_language = setup.target_language.name
+        target_side = setup.target_side
 
         set_name = config.current_set.name
         size = len(words)
+
+        form = SetFormUpdate(user=self.request.user, set=set)
 
         context = {
             'set_name': set_name,
             'src_language': src_language,
             'target_language': target_language,
+            'target_side': target_side,
             'words': words,
             'id': config.current_category_id,
-            'size': size
+            'size': size,
+            'form': form
         }
 
         return context
 
     def post(self, request, **kwargs):
-        print(request.POST)
-        set_name = request.POST['set_name']
 
+        set_name = request.POST['set_name']
+        current_user = request.user
+
+        # Changing set name
         words_set = config.current_set
         words_set.name = set_name
         words_set.save()
 
+        # Setup
+        setup = Setup.objects.filter(set=words_set)[0]
+
+        target_language = request.POST['target_language']
+        src_language = ""
+
+        if target_language == setup.target_language.name:
+            target_language = TargetLanguage.objects.filter(user=current_user,
+                                                            name=setup.target_language.name)[0]
+            src_language = SrcLanguage.objects.filter(user=current_user,
+                                                      name=setup.src_language.name)[0]
+        else:
+            target_language = TargetLanguage.objects.filter(user=current_user,
+                                                            name=setup.src_language.name)[0]
+            src_language = SrcLanguage.objects.filter(user=current_user,
+                                                      name=setup.target_language.name)[0]
+
+        setup.src_language = src_language
+        setup.target_language = target_language
+
+        target_side = request.POST['target_side']
+        setup.target_side = target_side
+        setup.save()
+        # End setup
+
         request_keys = request.POST.keys()
         high_idx = find_highest_request_idx(request_keys)
+        # print("Highest idx: ", high_idx)
 
         # clean up
         Word.objects.filter(set=words_set).delete()
 
         for i in range(1, high_idx + 1):
 
-            if "srcLan" + str(i) in request.POST:
-                src_word = request.POST['srcLan' + str(i)]
-                target_word = request.POST['tarLan' + str(i)]
+            if "left_field" + str(i) in request.POST:
+                src_word = ""
+                target_word = ""
+
+                if target_side == "left":
+                    src_word = request.POST['right_field' + str(i)]
+                    target_word = request.POST['left_field' + str(i)]
+                elif target_side == "right":
+                    src_word = request.POST['left_field' + str(i)]
+                    target_word = request.POST['right_field' + str(i)]
 
                 if src_word == '' or target_word == '':
                     continue
@@ -170,7 +239,36 @@ class UpdateSet(TemplateView):
                 words = Word(set=words_set, src_word=src_word, target_word=target_word)
                 words.save()
 
-        return HttpResponseRedirect(reverse('category-sets-list', kwargs={'pk': config.current_category_id}))
+        return HttpResponseRedirect(reverse('category-sets-list',
+                                            kwargs={'pk': config.current_category_id}))
+
+    # def post(self, request, **kwargs):
+    #     print(request.POST)
+    #     set_name = request.POST['set_name']
+    #
+    #     words_set = config.current_set
+    #     words_set.name = set_name
+    #     words_set.save()
+    #
+    #     request_keys = request.POST.keys()
+    #     high_idx = find_highest_request_idx(request_keys)
+    #
+    #     # clean up
+    #     Word.objects.filter(set=words_set).delete()
+    #
+    #     for i in range(1, high_idx + 1):
+    #
+    #         if "srcLan" + str(i) in request.POST:
+    #             src_word = request.POST['srcLan' + str(i)]
+    #             target_word = request.POST['tarLan' + str(i)]
+    #
+    #             if src_word == '' or target_word == '':
+    #                 continue
+    #
+    #             words = Word(set=words_set, src_word=src_word, target_word=target_word)
+    #             words.save()
+    #
+    #     return HttpResponseRedirect(reverse('category-sets-list', kwargs={'pk': config.current_category_id}))
 
 
 def set_preview_list(request, pk):

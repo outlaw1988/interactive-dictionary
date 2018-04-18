@@ -21,8 +21,8 @@ def find_highest_request_idx(keys):
     high_idx = 0
 
     for item in keys:
-        if item.startswith("srcLan"):
-            num = int(item[6:])
+        if item.startswith("left_field"):
+            num = int(item[10:])
             if num > high_idx:
                 high_idx = num
 
