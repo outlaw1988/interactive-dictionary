@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from intDictApp.models import Category, Set, Setup, Word, SrcLanguage, TargetLanguage
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from intDictApp.config import Config
-from intDictApp.utils import *
-from django.views.generic import TemplateView, View
-from braces import views
-from intDictApp.forms import LanguageForm, CategoryForm, SetForm, SetFormUpdate
-
-# config = Config()
+from django.views.generic import TemplateView
+from intDictApp.forms import LanguageForm, CategoryForm
 
 
 def categories_list(request):
     categories = Category.objects.filter(user=request.user)
-    # prevents rewinding
-    # config.clean_up()
 
     context = {
         'categories': categories
@@ -58,6 +51,34 @@ def add_category(request):
 
 class EditCategory(TemplateView):
     pass
+
+
+class RemoveCategory(TemplateView):
+
+    template_name = "intDictApp/remove_category.html"
+
+    def get_context_data(self, **kwargs):
+        category = Category.objects.filter(id=kwargs['pk'])[0]
+        context = {
+            'category_name': category.name,
+            'category_id': kwargs['pk']
+        }
+        return context
+
+    def post(self, request, **kwargs):
+
+        if "yes" in request.POST:
+            category = Category.objects.filter(id=kwargs['pk'])[0]
+            words_sets = Set.objects.filter(category=category)
+
+            for words_set in words_sets:
+                Setup.objects.filter(set=words_set).delete()
+                Word.objects.filter(set=words_set).delete()
+
+            Set.objects.filter(category=category).delete()
+            Category.objects.filter(id=kwargs['pk']).delete()
+
+        return HttpResponseRedirect(reverse('categories'))
 
 
 def add_language(request):

@@ -31,6 +31,12 @@ class Category(models.Model):
         """
         return reverse('category-sets-list', args=[str(self.id)])
 
+    def get_edit_url(self):
+        return reverse('edit-category', args=[str(self.id)])
+
+    def get_remove_url(self):
+        return reverse('remove-category', args=[str(self.id)])
+
 
 class Set(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4,
@@ -47,6 +53,9 @@ class Set(models.Model):
 
     def get_edit_url(self):
         return reverse('update-set', args=[str(self.id)])
+
+    def get_remove_url(self):
+        return reverse('remove-set', args=[str(self.id)])
 
 
 class SrcLanguage(models.Model):

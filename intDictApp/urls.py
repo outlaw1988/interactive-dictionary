@@ -14,5 +14,8 @@ urlpatterns = [
     path('exam_summary', exam_view.exam_summary, name='exam-summary'),
     path('add_language', category_view.add_language, name='add-language'),
     path('update_set/<uuid:pk>', set_view.UpdateSet.as_view(), name='update-set'),
-    path('edit_category/<int:pk>', category_view.EditCategory.as_view(), name="edit-category")
+    path('edit_category/<int:pk>', category_view.EditCategory.as_view(), name="edit-category"),
+    path('remove_category/<int:pk>', category_view.RemoveCategory.as_view(),
+         name="remove-category"),
+    path('remove_set/<uuid:pk>', set_view.RemoveSet.as_view(), name='remove-set')
 ]

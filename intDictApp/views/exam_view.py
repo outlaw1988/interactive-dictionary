@@ -1,19 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render, redirect
-from intDictApp.models import Category, Set, Setup, Word, SrcLanguage, TargetLanguage
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from intDictApp.config import Config
+from django.shortcuts import render
+from intDictApp.models import Category, Set, Setup, Word
+from intDictApp.config import ExamConfig
 from intDictApp.utils import *
 from django.views.generic import TemplateView, View
 from braces import views
-from intDictApp.forms import LanguageForm, CategoryForm, SetForm, SetFormUpdate
 
-config = Config()
-
-
-############# Exam
+config = ExamConfig()
 
 
 class ExamInit(TemplateView):
@@ -21,8 +15,6 @@ class ExamInit(TemplateView):
     config.clean_up()
 
     def get_context_data(self, **kwargs):
-        # print("Current category from session: ", self.request.session['category'])
-
         category = Category.objects.filter(id=self.request.session['category_id'])[0]
         words_set = Set.objects.filter(id=self.request.session['set_id'])[0]
 

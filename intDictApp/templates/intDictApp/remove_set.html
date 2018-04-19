@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<br>
+<p>Are you sure you want to remove set: {{ set_name }}?</p>
+
+<form action="{% url 'remove-set' set_id %}" method="post">
+  {% csrf_token %}
+
+  <button type="submit" name="yes" class="btn btn-primary">YES</button>
+  <button type="submit" name="no" class="btn btn-primary">NO</button>
+
+</form>
+
+{% endblock %}

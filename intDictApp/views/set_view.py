@@ -1,31 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from intDictApp.models import Category, Set, Setup, Word, SrcLanguage, TargetLanguage
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from intDictApp.config import Config
 from intDictApp.utils import *
-from django.views.generic import TemplateView, View
-from braces import views
-from intDictApp.forms import LanguageForm, CategoryForm, SetForm, SetFormUpdate
-
-# config = Config()
-
-
-##############  Set
+from django.views.generic import TemplateView
+from intDictApp.forms import SetForm, SetFormUpdate
 
 
 def category_sets_list(request, pk):
     category = Category.objects.get(id=pk)
-    # config.current_category = category
     request.session['category_name'] = category.name
     request.session['category_id'] = pk
 
-    # config.current_category_id = pk
     sets = Set.objects.filter(category=category)
-    # prevents rewinding
-    # config.clean_up()
 
     context = {
         'category': category,
@@ -36,13 +25,8 @@ def category_sets_list(request, pk):
 
 
 def add_set(request):
-    # print("Current category from request session: ", request.session['category'])
     table_list = list(range(1, 11))
     category = Category.objects.filter(id=request.session['category_id'])[0]
-
-    # def_src_language = config.current_category.default_source_language
-    # def_target_language = config.current_category.default_target_language
-    # target_side = config.current_category.default_target_side
 
     def_src_language = category.default_source_language
     def_target_language = category.default_target_language
@@ -86,7 +70,6 @@ def add_set(request):
 
         request_keys = request.POST.keys()
         high_idx = find_highest_request_idx(request_keys)
-        # print("Highest idx: ", high_idx)
 
         for i in range(1, high_idx + 1):
 
@@ -119,8 +102,6 @@ class UpdateSet(TemplateView):
         words_set = Set.objects.filter(id=self.kwargs['pk'])[0]  # pk - uuid
         self.request.session['set_name'] = words_set.name
         self.request.session['set_id'] = str(self.kwargs['pk'])
-        # config.current_set = set
-        # config.current_set_id = set.id
 
         words = Word.objects.filter(set=words_set)
 
@@ -215,12 +196,8 @@ class UpdateSet(TemplateView):
 def set_preview_list(request, pk):
     # pk - set UUID
     words_set = Set.objects.filter(id=pk)[0]
-    # config.current_set = words_set
-    # config.current_set_id = pk
     request.session['set_name'] = words_set.name
     request.session['set_id'] = str(pk)
-
-    # config.clean_up()
 
     words = Word.objects.filter(set=words_set)
     setup = Setup.objects.filter(set=words_set)
@@ -236,5 +213,29 @@ def set_preview_list(request, pk):
     }
 
     return render(request, 'intDictApp/words_preview.html', context)
+
+
+class RemoveSet(TemplateView):
+
+    template_name = "intDictApp/remove_set.html"
+
+    def get_context_data(self, **kwargs):
+        words_set = Set.objects.filter(id=kwargs['pk'])[0]
+        context = {
+            'set_name': words_set.name,
+            'set_id': kwargs['pk']
+        }
+        return context
+
+    def post(self, request, **kwargs):
+        if "yes" in request.POST:
+            words_set = Set.objects.filter(id=kwargs['pk'])[0]
+
+            Setup.objects.filter(set=words_set).delete()
+            Word.objects.filter(set=words_set).delete()
+            Set.objects.filter(id=kwargs['pk']).delete()
+
+        return HttpResponseRedirect(reverse('category-sets-list',
+                                            kwargs={'pk': self.request.session['category_id']}))
 
 

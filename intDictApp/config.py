@@ -1,7 +1,7 @@
 from random import shuffle
 
 
-class Config:
+class ExamConfig:
     """
     Using for exchanging data between views
     """
