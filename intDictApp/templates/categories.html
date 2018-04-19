@@ -7,7 +7,7 @@
     {% for category in categories %}
 
       <form method="post">
-          <li><a href="{{ category.get_absolute_url }}">{{category.name}}</a></li>
+          <li><a href="{{ category.get_absolute_url }}">{{category.name}}</a><a> edit</a><a> remove</a></li>
       </form>
 
     {% endfor %}

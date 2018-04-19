@@ -1,0 +1,86 @@
+# -*- coding: utf-8 -*-
+
+from django.shortcuts import render, redirect
+from intDictApp.models import Category, Set, Setup, Word, SrcLanguage, TargetLanguage
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from intDictApp.config import Config
+from intDictApp.utils import *
+from django.views.generic import TemplateView, View
+from braces import views
+from intDictApp.forms import LanguageForm, CategoryForm, SetForm, SetFormUpdate
+
+# config = Config()
+
+
+def categories_list(request):
+    categories = Category.objects.filter(user=request.user)
+    # prevents rewinding
+    # config.clean_up()
+
+    context = {
+        'categories': categories
+    }
+
+    return render(request, 'categories.html', context)
+
+
+def add_category(request):
+
+    if request.method == "POST":
+        form = CategoryForm(request.POST, user=request.user)
+
+        if form.is_valid():
+            category_name = request.POST['category_name']
+            def_src_lan_id = request.POST['src_language']
+            def_src_lan = SrcLanguage.objects.filter(id=def_src_lan_id)
+            def_target_lan_id = request.POST['target_language']
+            def_target_lan = TargetLanguage.objects.filter(id=def_target_lan_id)
+            def_target_side = request.POST['def_target_side']
+
+            category = Category(user=request.user, name=category_name,
+                                default_source_language=def_src_lan[0],
+                                default_target_language=def_target_lan[0],
+                                default_target_side=def_target_side)
+            category.save()
+
+            return HttpResponseRedirect(reverse('categories'))
+    else:
+
+        form = CategoryForm(user=request.user)
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "intDictApp/add_new_category.html", context)
+
+
+class EditCategory(TemplateView):
+    pass
+
+
+def add_language(request):
+
+    if request.method == "POST":
+
+        form = LanguageForm(request.POST, user=request.user)
+
+        if form.is_valid():
+
+            language_name = request.POST["language_name"]
+            src_language = SrcLanguage(user=request.user, name=language_name)
+            target_language = TargetLanguage(user=request.user, name=language_name)
+            src_language.save()
+            target_language.save()
+
+            return HttpResponseRedirect(reverse('categories'))
+    else:
+
+        form = LanguageForm()
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "intDictApp/add_language.html", context)
