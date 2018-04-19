@@ -5,10 +5,6 @@ class ExamConfig:
     """
     Using for exchanging data between views
     """
-    current_category = None  # Query set
-    current_category_id = 0
-    current_set = None  # Query set
-    current_set_id = None
     shuffled_idxes = None
     current_word_idx = 0
     size = 0

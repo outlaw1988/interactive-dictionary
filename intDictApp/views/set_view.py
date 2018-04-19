@@ -51,15 +51,13 @@ def add_set(request):
         target_language = request.POST['target_language']
         src_language = ""
 
-        if target_language == def_target_language:
-            target_language = TargetLanguage.objects.filter(user=current_user,
-                                                            name=def_target_language)[0]
-            src_language = SrcLanguage.objects.filter(user=current_user, name=def_src_language)[0]
-        else:
-            target_language = TargetLanguage.objects.filter(user=current_user,
-                                                            name=def_src_language)[0]
-            src_language = SrcLanguage.objects.filter(user=current_user,
-                                                      name=def_target_language)[0]
+        if target_language == def_target_language.name:
+            target_language = def_target_language
+            src_language = def_src_language
+
+        elif target_language == def_src_language.name:
+            target_language = def_src_language
+            src_language = def_target_language
 
         target_side = request.POST['target_side']
 

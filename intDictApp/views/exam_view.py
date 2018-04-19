@@ -118,17 +118,17 @@ def exam_summary(request):
     # last_result = setup.last_result
     best_result = setup.best_result
 
-
     context = {
         'src_words': src_words,
         'target_words': target_words,
-        'category': request.session['category_name'],
+        'category_name': request.session['category_name'],
         'set': words_set,
-        'setup': setup,
         'last_result': last_result,
         'best_result': best_result,
         'answers_list': config.answers_list,
-        'id': config.current_category_id
+        'id': request.session['category_id'],
+        'src_language': setup.src_language,
+        'target_language': setup.target_language
     }
 
     config.clean_up()
