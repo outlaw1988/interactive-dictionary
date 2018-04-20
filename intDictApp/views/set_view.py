@@ -15,10 +15,16 @@ def category_sets_list(request, pk):
     request.session['category_id'] = pk
 
     sets = Set.objects.filter(category=category)
+    word_counters = []
+
+    for set in sets:
+        words = Word.objects.filter(set=set)
+        word_counters.append(words.count())
 
     context = {
         'category': category,
-        'sets': sets
+        'sets': sets,
+        'word_counters': word_counters
     }
 
     return render(request, 'intDictApp/category_sets_list.html', context)

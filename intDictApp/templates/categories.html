@@ -4,11 +4,16 @@
 <h2>Categories available:</h2>
 
   <ul>
+    {% load index %}
+
     {% for category in categories %}
 
       <form method="post">
           <li><a href="{{ category.get_absolute_url }}">{{category.name}}</a>
-            <a> edit</a><a href= "{{ category.get_remove_url }}"> remove</a></li>
+            <a> sets: {{ set_counters|index:forloop.counter0 }}</a>
+            <a> words: {{ word_counters|index:forloop.counter0 }}</a>
+            <a href="{{ category.get_edit_url }}"> edit</a>
+            <a href= "{{ category.get_remove_url }}"> remove</a></li>
       </form>
 
     {% endfor %}
@@ -18,3 +23,7 @@
         <a href="{% url 'add-category' %}">Add category</a>
 
 {% endblock %}
+
+<script>
+
+</script>

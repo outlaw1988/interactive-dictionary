@@ -76,6 +76,7 @@ class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
             setup = setup[0]
             if result > setup.best_result:
                 setup.best_result = result
+                config.best_result = result
 
             setup.last_result = result
             config.result = result
@@ -114,6 +115,7 @@ def exam_summary(request):
     setup = Setup.objects.filter(set=words_set)[0]
 
     last_result = config.result
+    # best_result = config.best_result
     # TODO Database BUG
     # last_result = setup.last_result
     best_result = setup.best_result

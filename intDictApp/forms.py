@@ -8,6 +8,9 @@ class CategoryForm(forms.Form):
     def __init__(self, *args, **kwargs):
 
         self.user = kwargs.pop("user")
+        self.edit_mode = kwargs.pop('edit_mode')
+        if self.edit_mode:
+            self.category = kwargs.pop('category')
         super(CategoryForm, self).__init__(*args, **kwargs)
 
         self.fields['category_name'] = forms.CharField(max_length=100,
@@ -29,11 +32,15 @@ class CategoryForm(forms.Form):
         self.fields['def_target_side'] = forms.ChoiceField(choices=sides)
         self.fields['def_target_side'].label = "Default target side"
 
+        # Initial values for edit mode
+        if self.edit_mode:
+            self.init_fields(category=self.category)
+
     def clean_category_name(self):
         category_name = self.cleaned_data['category_name']
         category_to_check = Category.objects.filter(user=self.user, name=category_name)
 
-        if category_to_check.count() > 0:
+        if category_to_check.count() > 0 and not self.edit_mode:
             raise ValidationError("This category already exists!")
 
     def clean(self):
@@ -42,6 +49,17 @@ class CategoryForm(forms.Form):
             target_language = self.cleaned_data['target_language']
             if src_language.name == target_language.name:
                 raise ValidationError("Languages are the same!")
+
+    def init_fields(self, category):
+        src_language = category.default_source_language
+        target_language = category.default_target_language
+        target_side = category.default_target_side
+        category_name = category.name
+
+        self.fields['category_name'].initial = category_name
+        self.fields['src_language'].initial = src_language
+        self.fields['target_language'].initial = target_language
+        self.fields['def_target_side'].initial = target_side
 
 
 class SetForm(forms.Form):
