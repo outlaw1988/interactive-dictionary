@@ -7,8 +7,11 @@ from django.urls import reverse
 from intDictApp.utils import *
 from django.views.generic import TemplateView
 from intDictApp.forms import SetForm, SetFormUpdate
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
 def category_sets_list(request, pk):
     category = Category.objects.get(id=pk)
     request.session['category_name'] = category.name
@@ -30,6 +33,7 @@ def category_sets_list(request, pk):
     return render(request, 'intDictApp/category_sets_list.html', context)
 
 
+@login_required
 def add_set(request):
     table_list = list(range(1, 11))
     category = Category.objects.filter(id=request.session['category_id'])[0]
@@ -99,7 +103,7 @@ def add_set(request):
         return render(request, 'intDictApp/add_new_set.html', context)
 
 
-class UpdateSet(TemplateView):
+class UpdateSet(LoginRequiredMixin, TemplateView):
     template_name = 'intDictApp/update_set.html'
 
     def get_context_data(self, **kwargs):
@@ -197,6 +201,7 @@ class UpdateSet(TemplateView):
                                             kwargs={'pk': self.request.session['category_id']}))
 
 
+@login_required
 def set_preview_list(request, pk):
     # pk - set UUID
     words_set = Set.objects.filter(id=pk)[0]
@@ -219,7 +224,7 @@ def set_preview_list(request, pk):
     return render(request, 'intDictApp/words_preview.html', context)
 
 
-class RemoveSet(TemplateView):
+class RemoveSet(LoginRequiredMixin, TemplateView):
 
     template_name = "intDictApp/remove_set.html"
 

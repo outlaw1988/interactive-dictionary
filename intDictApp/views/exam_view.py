@@ -6,11 +6,13 @@ from intDictApp.config import ExamConfig
 from intDictApp.utils import *
 from django.views.generic import TemplateView, View
 from braces import views
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 config = ExamConfig()
 
 
-class ExamInit(TemplateView):
+class ExamInit(LoginRequiredMixin, TemplateView):
     template_name = 'intDictApp/exam.html'
     config.clean_up()
 
@@ -36,7 +38,8 @@ class ExamInit(TemplateView):
         return context
 
 
-class ExamCheck(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
+class ExamCheck(LoginRequiredMixin,
+                views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
     require_json = True
 
     def post(self, request, *args, **kwargs):
@@ -57,7 +60,8 @@ class ExamCheck(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
         return self.render_json_response({"message": message})
 
 
-class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
+class ExamNext(LoginRequiredMixin,
+               views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
     require_json = True
 
     def post(self, request, *args, **kwargs):
@@ -108,6 +112,7 @@ class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
             return self.render_json_response(context)
 
 
+@login_required
 def exam_summary(request):
     words_set = Set.objects.filter(id=request.session['set_id'])[0]
     words = Word.objects.filter(set=words_set)

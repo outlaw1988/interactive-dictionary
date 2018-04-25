@@ -7,8 +7,11 @@ from django.urls import reverse
 from django.views.generic import TemplateView, UpdateView, CreateView
 from intDictApp.forms import LanguageForm, CategoryForm, CategoryFormUpdate
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
 def categories_list(request):
     categories = Category.objects.filter(user=request.user)
     set_counters = []
@@ -32,27 +35,25 @@ def categories_list(request):
     return render(request, 'categories.html', context)
 
 
-class CategoryAdd(CreateView):
+class CategoryAdd(LoginRequiredMixin, CreateView):
     model = Category
     template_name = "intDictApp/add_new_category.html"
     fields = ['name', 'default_source_language', 'default_target_language',
               'default_target_side']
 
 
-class CategoryAddWithForm(CreateView):
+class CategoryAddWithForm(LoginRequiredMixin, CreateView):
     model = Category
     template_name = "intDictApp/add_new_category.html"
     success_url = reverse_lazy('categories')
     form_class = CategoryForm
 
 
-class CategoryUpdate(UpdateView):
+class CategoryUpdate(LoginRequiredMixin, UpdateView):
     template_name = "intDictApp/edit_category.html"
     model = Category
-    fields = ['user', 'name', 'default_source_language', 'default_target_language',
-              'default_target_side']
     success_url = reverse_lazy('categories')
-    # form_class = CategoryFormUpdate
+    form_class = CategoryFormUpdate
 
     # def get_form(self, form_class=None):
     #     form_class = self.get_form_class()
@@ -70,7 +71,7 @@ class CategoryUpdate(UpdateView):
     #     return super(CategoryUpdate, self).form_valid(form)
 
 
-class RemoveCategory(TemplateView):
+class RemoveCategory(LoginRequiredMixin, TemplateView):
 
     template_name = "intDictApp/remove_category.html"
 
@@ -98,6 +99,7 @@ class RemoveCategory(TemplateView):
         return HttpResponseRedirect(reverse('categories'))
 
 
+@login_required
 def add_language(request):
 
     if request.method == "POST":
