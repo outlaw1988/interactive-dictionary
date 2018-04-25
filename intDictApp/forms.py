@@ -3,15 +3,91 @@ from django.core.exceptions import ValidationError
 from .models import SrcLanguage, TargetLanguage, Category, Set, Setup
 
 
-class CategoryForm(forms.Form):
+class CategoryForm(forms.ModelForm):
+
+    def clean(self):
+        category_name = self.cleaned_data['name']
+        category_to_check = Category.objects.filter(name=category_name)
+
+        if category_to_check.count() > 0:
+            self.add_error('name', ValidationError("This category already exists!"))
+
+        if ("default_source_language" in self.cleaned_data) and \
+                ("default_target_language" in self.cleaned_data):
+            src_language = self.cleaned_data['default_source_language']
+            target_language = self.cleaned_data['default_target_language']
+            if src_language.name == target_language.name:
+                # raise ValidationError("Languages are the same!")
+                self.add_error(None, ValidationError('Languages are the same'))
+        # self.cleaned_data['name'] = "Music2"
+        # return cleaned_data
+
+    # def clean_name(self):
+    #     print("Clean name called!!!!")
+    #     print("Cleaned data: ", self.cleaned_data)
+    #     #cleaned_data = super(CategoryForm, self).clean()
+    #     category_name = self.cleaned_data['name']
+    #     # TODO name is empty https://stackoverflow.com/questions/19864854/this-field-cannot-be-null-error-in-a-django-1-5-modelform
+    #     category_to_check = Category.objects.filter(name=category_name)
+    #
+    #     if category_to_check.count() > 0:
+    #         self.add_error(None,
+    #                        ValidationError("This category already exists!"))
+    #     #return cleaned_data
+
+    class Meta:
+        model = Category
+        fields = ['user', 'name', 'default_source_language', 'default_target_language',
+                  'default_target_side']
+
+# class CategoryForm(forms.Form):
+#
+#     def __init__(self, *args, **kwargs):
+#
+#         self.user = kwargs.pop("user")
+#         super(CategoryForm, self).__init__(*args, **kwargs)
+#
+#         self.fields['category_name'] = forms.CharField(max_length=100,
+#                                                        help_text="Please enter category name")
+#         self.fields['category_name'].label = "Category name"
+#
+#         src_languages = SrcLanguage.objects.filter(user=self.user)
+#         target_languages = TargetLanguage.objects.filter(user=self.user)
+#
+#         self.fields['src_language'] = forms.ModelChoiceField(queryset=src_languages)
+#         self.fields['src_language'].label = "Default source language"
+#         self.fields['target_language'] = forms.ModelChoiceField(queryset=target_languages)
+#         self.fields['target_language'].label = "Default target language"
+#
+#         sides = (
+#             ('left', 'left'),
+#             ('right', 'right'))
+#
+#         self.fields['def_target_side'] = forms.ChoiceField(choices=sides)
+#         self.fields['def_target_side'].label = "Default target side"
+#
+#     def clean_category_name(self):
+#         category_name = self.cleaned_data['category_name']
+#         category_to_check = Category.objects.filter(user=self.user, name=category_name)
+#
+#         if category_to_check.count() > 0 and not self.edit_mode:
+#             self.add_error('category_name', ValidationError("This category already exists!"))
+#
+#     def clean(self):
+#         if ("src_language" in self.cleaned_data) and ("target_language" in self.cleaned_data):
+#             src_language = self.cleaned_data['src_language']
+#             target_language = self.cleaned_data['target_language']
+#             if src_language.name == target_language.name:
+#                 self.add_error(None, ValidationError("Languages are the same!"))
+
+
+class CategoryFormUpdate(forms.Form):
 
     def __init__(self, *args, **kwargs):
 
         self.user = kwargs.pop("user")
-        self.edit_mode = kwargs.pop('edit_mode')
-        if self.edit_mode:
-            self.category = kwargs.pop('category')
-        super(CategoryForm, self).__init__(*args, **kwargs)
+        self.category = kwargs.pop('category')
+        super(CategoryFormUpdate, self).__init__(*args, **kwargs)
 
         self.fields['category_name'] = forms.CharField(max_length=100,
                                                        help_text="Please enter category name")
@@ -33,14 +109,13 @@ class CategoryForm(forms.Form):
         self.fields['def_target_side'].label = "Default target side"
 
         # Initial values for edit mode
-        if self.edit_mode:
-            self.init_fields(category=self.category)
+        self.init_fields(category=self.category)
 
     def clean_category_name(self):
         category_name = self.cleaned_data['category_name']
         category_to_check = Category.objects.filter(user=self.user, name=category_name)
 
-        if category_to_check.count() > 0 and not self.edit_mode:
+        if category_to_check.count() > 0:
             raise ValidationError("This category already exists!")
 
     def clean(self):

@@ -5,8 +5,9 @@ from .views import category_view, set_view, exam_view
 urlpatterns = [
     path('', category_view.categories_list, name='categories'),
     path('category/<int:pk>', set_view.category_sets_list, name='category-sets-list'),
-    path('add_category', category_view.add_category, name='add-category'),
-    path('edit_category/<int:pk>', category_view.edit_category, name="edit-category"),
+    path('add_category', category_view.CategoryAddWithForm.as_view(), name='add-category'),
+    path('edit_category/<int:pk>', category_view.CategoryUpdate.as_view(),
+         name="edit-category"),
     path('add_set', set_view.add_set, name='add-set'),
     path('preview/<uuid:pk>', set_view.set_preview_list, name='set-preview-list'),
     path('exam', exam_view.ExamInit.as_view(), name='exam'),
