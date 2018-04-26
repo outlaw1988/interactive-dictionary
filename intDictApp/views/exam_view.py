@@ -38,8 +38,7 @@ class ExamInit(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ExamCheck(LoginRequiredMixin,
-                views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
+class ExamCheck(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
     require_json = True
 
     def post(self, request, *args, **kwargs):
@@ -60,8 +59,7 @@ class ExamCheck(LoginRequiredMixin,
         return self.render_json_response({"message": message})
 
 
-class ExamNext(LoginRequiredMixin,
-               views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
+class ExamNext(views.CsrfExemptMixin, views.JsonRequestResponseMixin, View):
     require_json = True
 
     def post(self, request, *args, **kwargs):
@@ -112,32 +110,65 @@ class ExamNext(LoginRequiredMixin,
             return self.render_json_response(context)
 
 
-@login_required
-def exam_summary(request):
-    words_set = Set.objects.filter(id=request.session['set_id'])[0]
-    words = Word.objects.filter(set=words_set)
-    src_words, target_words = convert_queryset_to_list_words(words)
-    setup = Setup.objects.filter(set=words_set)[0]
+# @login_required
+# def exam_summary(request):
+#     words_set = Set.objects.filter(id=request.session['set_id'])[0]
+#     words = Word.objects.filter(set=words_set)
+#     src_words, target_words = convert_queryset_to_list_words(words)
+#     setup = Setup.objects.filter(set=words_set)[0]
+#
+#     last_result = config.result
+#     # best_result = config.best_result
+#     # TODO Database BUG
+#     # last_result = setup.last_result
+#     best_result = setup.best_result
+#
+#     context = {
+#         'src_words': src_words,
+#         'target_words': target_words,
+#         'category_name': request.session['category_name'],
+#         'set': words_set,
+#         'last_result': last_result,
+#         'best_result': best_result,
+#         'answers_list': config.answers_list,
+#         'id': request.session['category_id'],
+#         'src_language': setup.src_language,
+#         'target_language': setup.target_language
+#     }
+#
+#     config.clean_up()
+#
+#     return render(request, 'intDictApp/exam_summary.html', context)
 
-    last_result = config.result
-    # best_result = config.best_result
-    # TODO Database BUG
-    # last_result = setup.last_result
-    best_result = setup.best_result
 
-    context = {
-        'src_words': src_words,
-        'target_words': target_words,
-        'category_name': request.session['category_name'],
-        'set': words_set,
-        'last_result': last_result,
-        'best_result': best_result,
-        'answers_list': config.answers_list,
-        'id': request.session['category_id'],
-        'src_language': setup.src_language,
-        'target_language': setup.target_language
-    }
+class ExamSummary(LoginRequiredMixin, TemplateView):
 
-    config.clean_up()
+    template_name = "intDictApp/exam_summary.html"
 
-    return render(request, 'intDictApp/exam_summary.html', context)
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data()
+        words_set = Set.objects.filter(id=self.request.session['set_id'])[0]
+        words = Word.objects.filter(set=words_set)
+        src_words, target_words = convert_queryset_to_list_words(words)
+        setup = Setup.objects.filter(set=words_set)[0]
+
+        last_result = config.result
+        # best_result = config.best_result
+        # TODO Database BUG
+        # last_result = setup.last_result
+        best_result = setup.best_result
+
+        data['src_words'] = src_words
+        data['target_words'] = target_words
+        data['category_name'] = self.request.session['category_name']
+        data['set'] = words_set
+        data['last_result'] = last_result
+        data['best_result'] = best_result
+        data['answers_list'] = config.answers_list
+        data['id'] = self.request.session['category_id']
+        data['src_language'] = setup.src_language
+        data['target_language'] = setup.target_language
+
+        config.clean_up()
+
+        return data

@@ -6,7 +6,7 @@
   <ul>
     {% load index %}
 
-    {% for category in categories %}
+    {% for category in category_list %}
 
       <form method="post">
           <li><a href="{{ category.get_absolute_url }}">{{category.name}}</a>

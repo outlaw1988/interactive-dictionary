@@ -149,12 +149,14 @@ class LanguageForm(forms.Form):
     language_name = forms.CharField(max_length=100, help_text="Please enter language name")
 
     def __init__(self, *args, **kwargs):
-        if len(kwargs) != 0:
+        # print("Form kwargs: ", kwargs)
+        if "user" in kwargs:
             self.user = kwargs.pop("user")
         super(LanguageForm, self).__init__(*args, **kwargs)
         self.fields['language_name'].label = "Language name"
 
-    def clean_language_name(self):
+    def clean(self):
+        # print("Clean language name called!!")
         name = self.cleaned_data['language_name']
         src_language = SrcLanguage.objects.filter(user=self.user, name=name)
         target_language = TargetLanguage.objects.filter(user=self.user, name=name)
@@ -164,3 +166,42 @@ class LanguageForm(forms.Form):
             raise ValidationError('This language already exists!')
 
         return name
+
+# class LanguageForm(forms.ModelForm):
+#
+#     def __init__(self, *args, **kwargs):
+#         print("Form kwargs: ", kwargs)
+#         if len(kwargs) != 0:
+#             self.user = kwargs.pop("user")
+#         super(LanguageForm, self).__init__(*args, **kwargs)
+#         # self.fields['language_name'].label = "Language name"
+#
+#     def clean(self):
+#         print("Clean name called!!")
+#
+#     class Meta:
+#         model = SrcLanguage
+#         fields = ['name']
+
+# class LanguageForm(forms.ModelForm):
+#
+#     # def __init__(self, *args, **kwargs):
+#     #     print("Form kwargs: ", kwargs)
+#     #     if len(kwargs) != 0:
+#     #         self.user = kwargs.pop("user")
+#     #     super(LanguageForm, self).__init__(*args, **kwargs)
+#     #     # self.fields['language_name'].label = "Language name"
+#
+#     def clean(self):
+#         # print("Clean language name called!!")
+#         # print("Cleaned data: ", self.cleaned_data)
+#         name = self.cleaned_data['name']
+#         # TODO Add user
+#         src_language = SrcLanguage.objects.filter(name=name)
+#         target_language = TargetLanguage.objects.filter(name=name)
+#         if src_language.count() > 0 or target_language.count() > 0:
+#             self.add_error(None, ValidationError('This language already exists!'))
+#
+#     class Meta:
+#         model = SrcLanguage
+#         fields = ['user', 'name']

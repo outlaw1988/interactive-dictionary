@@ -4,42 +4,38 @@ from django.shortcuts import render
 from intDictApp.models import Category, Set, Setup, Word, SrcLanguage, TargetLanguage
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.views.generic import TemplateView, UpdateView, CreateView
+from django.views.generic import TemplateView, UpdateView, CreateView, ListView
 from intDictApp.forms import LanguageForm, CategoryForm, CategoryFormUpdate
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 
 
-@login_required
-def categories_list(request):
-    categories = Category.objects.filter(user=request.user)
-    set_counters = []
-    word_counters = []
-
-    for category in categories:
-        words_sets = Set.objects.filter(user=request.user, category=category)
-        w_counter = 0
-        for words_set in words_sets:
-            words = Word.objects.filter(set=words_set)
-            w_counter += words.count()
-        set_counters.append(words_sets.count())
-        word_counters.append(w_counter)
-
-    context = {
-        'categories': categories,
-        'set_counters': set_counters,
-        'word_counters': word_counters
-    }
-
-    return render(request, 'categories.html', context)
-
-
-class CategoryAdd(LoginRequiredMixin, CreateView):
+class CategoriesList(LoginRequiredMixin, ListView):
     model = Category
-    template_name = "intDictApp/add_new_category.html"
-    fields = ['name', 'default_source_language', 'default_target_language',
-              'default_target_side']
+    template_name = "categories.html"
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        categories = Category.objects.filter(user=self.request.user)
+        set_counters = []
+        word_counters = []
+
+        for category in categories:
+            words_sets = Set.objects.filter(user=self.request.user, category=category)
+            w_counter = 0
+            for words_set in words_sets:
+                words = Word.objects.filter(set=words_set)
+                w_counter += words.count()
+            set_counters.append(words_sets.count())
+            word_counters.append(w_counter)
+
+        data['set_counters'] = set_counters
+        data['word_counters'] = word_counters
+        return data
+
+    def get_queryset(self):
+        return Category.objects.filter(user=self.request.user)
 
 
 class CategoryAddWithForm(LoginRequiredMixin, CreateView):
@@ -124,3 +120,37 @@ def add_language(request):
     }
 
     return render(request, "intDictApp/add_language.html", context)
+
+
+# class AddLanguage(LoginRequiredMixin, CreateView):
+#     template_name = "intDictApp/add_language.html"
+#     success_url = reverse_lazy('categories')
+#     form_class = LanguageForm
+#
+#     # def post(self, request, *args, **kwargs):
+#     #     """
+#     #     Handle POST requests: instantiate a form instance with the passed
+#     #     POST variables and then check if it's valid.
+#     #     """
+#     #     form = self.get_form()
+#     #     if form.is_valid():
+#     #         return self.form_valid(form)
+#     #     else:
+#     #         return self.form_invalid(form)
+#     #
+#     def form_valid(self, form):
+#         """If the form is valid, redirect to the supplied URL."""
+#         print("Form valid called!!")
+#         return HttpResponseRedirect(self.get_success_url())
+#     #
+#     # def form_invalid(self, form):
+#     #     print("Form invalid called!!")
+#     #     print("Request: ", self.request.POST)
+#     #
+#     # def get_form_kwargs(self):
+#     #     # kwargs = super().get_form_kwargs()
+#     #     print("Request method: ", self.request)
+#     #     kwargs = {}
+#     #     if self.request.POST:
+#     #         kwargs = {'user': self.request.user}
+#     #     return kwargs
