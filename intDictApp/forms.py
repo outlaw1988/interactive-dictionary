@@ -22,9 +22,6 @@ class CategoryForm(forms.Form):
         self.fields['default_target_side'] = forms.ChoiceField(choices=sides)
 
     def clean_category_name(self):
-        print("Clean category name called...")
-        print("User is: ", self.user)
-        print("Cleaned data: ", self.cleaned_data)
         category_name = self.cleaned_data['category_name']
         category_to_check = Category.objects.filter(name=category_name, user=self.user)
 
@@ -40,28 +37,47 @@ class CategoryForm(forms.Form):
                 self.add_error(None, ValidationError('Languages are the same'))
 
 
-class CategoryFormUpdate(forms.ModelForm):
+class CategoryFormUpdate(forms.Form):
 
-    class Meta:
-        model = Category
-        fields = ['user', 'name', 'default_source_language', 'default_target_language',
-                  'default_target_side']
+    def __init__(self, *args, **kwargs):
+        if "category" in kwargs:
+            self.category = kwargs.pop('category')
+        if "user" in kwargs:
+            self.user = kwargs.pop('user')
+        if "prev_name" in kwargs:
+            self.prev_cat_name = kwargs.pop('prev_name')
+        super(CategoryFormUpdate, self).__init__(*args, **kwargs)
+
+        self.fields['category_name'] = forms.CharField(max_length=100,
+                                                       help_text="Please enter category name",
+                                                       required=True)
+        self.fields['category_name'].initial = self.category.name
+        self.fields['default_source_language'] = forms.ModelChoiceField(queryset=SrcLanguage.objects.all())
+        self.fields['default_source_language'].initial = self.category.default_source_language
+        self.fields['default_target_language'] = forms.ModelChoiceField(queryset=TargetLanguage.objects.all())
+        self.fields['default_target_language'].initial = self.category.default_target_language
+
+        sides = (
+            ('left', 'left'),
+            ('right', 'right'))
+
+        self.fields['default_target_side'] = forms.ChoiceField(choices=sides)
+        self.fields['default_target_side'].initial = self.category.default_target_side
+
+    def clean_category_name(self):
+        print("Clean category name called...")
+        category_name = self.cleaned_data['category_name']
+        category_to_check = Category.objects.filter(name=category_name, user=self.user)
+
+        if category_to_check.count() > 0 and category_name != self.prev_cat_name:
+            self.add_error('category_name', ValidationError("This category already exists!"))
 
     def clean(self):
-        print("Clean called - CategoryFormUpdate!!")
-        # category_name = self.cleaned_data['name']
-        # TODO User! + validation of category existence
-        # category_to_check = Category.objects.filter(name=category_name)
-        #
-        # if category_to_check.count() > 0:
-        #     self.add_error('name', ValidationError("This category already exists!"))
-
         if ("default_source_language" in self.cleaned_data) and \
-                ("default_target_language" in self.cleaned_data):
+                                ("default_target_language" in self.cleaned_data):
             src_language = self.cleaned_data['default_source_language']
             target_language = self.cleaned_data['default_target_language']
             if src_language.name == target_language.name:
-                # raise ValidationError("Languages are the same!")
                 self.add_error(None, ValidationError('Languages are the same'))
 
 

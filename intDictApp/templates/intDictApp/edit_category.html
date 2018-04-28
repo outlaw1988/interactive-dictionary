@@ -4,7 +4,7 @@
 
 <br>
 
-<form action="" method="post">
+<form action="{% url 'edit-category' category_id %}" method="post">
 
   {% csrf_token %}
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render
 from intDictApp.models import Category, Set, Setup, Word, SrcLanguage, TargetLanguage
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -8,7 +7,6 @@ from django.views.generic import TemplateView, UpdateView, CreateView, ListView
 from intDictApp.forms import LanguageForm, CategoryForm, CategoryFormUpdate
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
 
 
 class CategoriesList(LoginRequiredMixin, ListView):
@@ -74,26 +72,82 @@ class CategoryAdd(LoginRequiredMixin, TemplateView):
             return self.render_to_response(context=context)
 
 
-class CategoryUpdate(LoginRequiredMixin, UpdateView):
+class CategoryUpdate(LoginRequiredMixin, TemplateView):
+
     template_name = "intDictApp/edit_category.html"
-    model = Category
-    success_url = reverse_lazy('categories')
-    form_class = CategoryFormUpdate
 
-    # def get_form(self, form_class=None):
-    #     form_class = self.get_form_class()
-    #     category = Category.objects.filter(id=self.kwargs['pk'])[0]
-    #     return form_class(user=self.request.user, category=category)
+    def get_context_data(self, **kwargs):
+        category = Category.objects.filter(id=self.kwargs['pk'])[0]
+        if "form" not in kwargs:
+            # GET request
+            form = CategoryFormUpdate(category=category)
+        else:
+            # POST request
+            form = kwargs['form']
 
-    # def get_form_class(self):
-    #     return CategoryFormUpdate
+        context = {
+            'form': form,
+            'category_id': self.kwargs['pk']
+        }
+        return context
 
-    # def get_form(self, form_class=CategoryFormUpdate):
-    #     category = Category.objects.filter(user=self.request.user, id=self.kwargs['pk'])[0]
-    #     return CategoryFormUpdate(user=self.request.user, category=category)
-    #
-    # def form_valid(self, form):
-    #     return super(CategoryUpdate, self).form_valid(form)
+    def post(self, request, *args, **kwargs):
+        category = Category.objects.filter(id=self.kwargs['pk'])[0]
+        form = CategoryFormUpdate(request.POST, user=self.request.user, category=category,
+                                  prev_name=category.name)
+        if form.is_valid():
+            print("Form is valid!")
+            category_name = request.POST['category_name']
+            def_src_lan_id = request.POST['default_source_language']
+            def_src_lan = SrcLanguage.objects.filter(id=def_src_lan_id)[0]
+            def_target_lan_id = request.POST['default_target_language']
+            def_target_lan = TargetLanguage.objects.filter(id=def_target_lan_id)[0]
+            def_target_side = request.POST['default_target_side']
+
+            category = Category.objects.filter(id=self.kwargs['pk'])[0]
+            category.name = category_name
+            category.default_source_language = def_src_lan
+            category.default_target_language = def_target_lan
+            category.default_target_side = def_target_side
+            category.save()
+
+            return HttpResponseRedirect(reverse('categories'))
+        else:
+            print("Invalid form!")
+            context = self.get_context_data(form=form)
+            return self.render_to_response(context=context)
+
+
+# class CategoryUpdate(LoginRequiredMixin, UpdateView):
+#     template_name = "intDictApp/edit_category.html"
+#     model = Category
+#     success_url = reverse_lazy('categories')
+#     form_class = CategoryFormUpdate
+#
+#     def post(self, request, *args, **kwargs):
+#         form = CategoryForm(request.POST, user=self.request.user, prev_name="Previous name")
+#         if form.is_valid():
+#             print("Form is valid!")
+#             return HttpResponseRedirect(reverse('categories'))
+#         else:
+#             print("Invalid form!")
+#             context = self.get_context_data(form=form)
+#             return self.render_to_response(context=context)
+#
+#     # def get_form(self, form_class=None):
+#     #     form_class = self.get_form_class()
+#     #     category = Category.objects.filter(id=self.kwargs['pk'])[0]
+#     #     return form_class(user=self.request.user, category=category)
+#
+#     # def get_form_class(self):
+#     #     return CategoryFormUpdate
+#
+#     # def get_form(self, form_class=CategoryFormUpdate):
+#     #     category = Category.objects.filter(user=self.request.user, id=self.kwargs['pk'])[0]
+#     #     return CategoryFormUpdate(user=self.request.user, category=category)
+#     #
+#     # def form_valid(self, form):
+#     #     return super(CategoryUpdate, self).form_valid(form)
 
 
 class RemoveCategory(LoginRequiredMixin, TemplateView):
