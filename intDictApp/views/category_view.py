@@ -38,11 +38,40 @@ class CategoriesList(LoginRequiredMixin, ListView):
         return Category.objects.filter(user=self.request.user)
 
 
-class CategoryAddWithForm(LoginRequiredMixin, CreateView):
-    model = Category
+class CategoryAdd(LoginRequiredMixin, TemplateView):
     template_name = "intDictApp/add_new_category.html"
-    success_url = reverse_lazy('categories')
-    form_class = CategoryForm
+
+    def get_context_data(self, **kwargs):
+        if "form" not in kwargs:
+            # GET request
+            form = CategoryForm()
+        else:
+            # POST request
+            form = kwargs['form']
+
+        context = {
+            'form': form
+        }
+        return context
+
+    def post(self, request):
+        form = CategoryForm(request.POST, user=self.request.user)
+        if form.is_valid():
+            category_name = request.POST['category_name']
+            def_src_lan_id = request.POST['default_source_language']
+            def_src_lan = SrcLanguage.objects.filter(id=def_src_lan_id)[0]
+            def_target_lan_id = request.POST['default_target_language']
+            def_target_lan = TargetLanguage.objects.filter(id=def_target_lan_id)[0]
+            def_target_side = request.POST['default_target_side']
+            category = Category(name=category_name, default_source_language=def_src_lan,
+                                default_target_language=def_target_lan,
+                                default_target_side=def_target_side, user=self.request.user)
+            category.save()
+
+            return HttpResponseRedirect(reverse('categories'))
+        else:
+            context = self.get_context_data(form=form)
+            return self.render_to_response(context=context)
 
 
 class CategoryUpdate(LoginRequiredMixin, UpdateView):
@@ -95,62 +124,32 @@ class RemoveCategory(LoginRequiredMixin, TemplateView):
         return HttpResponseRedirect(reverse('categories'))
 
 
-@login_required
-def add_language(request):
+class LanguageAdd(LoginRequiredMixin, TemplateView):
 
-    if request.method == "POST":
+    template_name = "intDictApp/add_language.html"
 
-        form = LanguageForm(request.POST, user=request.user)
+    def get_context_data(self, **kwargs):
+        if "form" not in kwargs:
+            # GET request
+            form = LanguageForm()
+        else:
+            # POST request
+            form = kwargs['form']
 
+        context = {
+            'form': form
+        }
+        return context
+
+    def post(self, request):
+        form = LanguageForm(request.POST, user=self.request.user)
         if form.is_valid():
-
-            language_name = request.POST["language_name"]
-            src_language = SrcLanguage(user=request.user, name=language_name)
-            target_language = TargetLanguage(user=request.user, name=language_name)
+            language_name = request.POST['language_name']
+            src_language = SrcLanguage(user=self.request.user, name=language_name)
+            target_language = TargetLanguage(user=self.request.user, name=language_name)
             src_language.save()
             target_language.save()
-
             return HttpResponseRedirect(reverse('categories'))
-    else:
-
-        form = LanguageForm()
-
-    context = {
-        'form': form
-    }
-
-    return render(request, "intDictApp/add_language.html", context)
-
-
-# class AddLanguage(LoginRequiredMixin, CreateView):
-#     template_name = "intDictApp/add_language.html"
-#     success_url = reverse_lazy('categories')
-#     form_class = LanguageForm
-#
-#     # def post(self, request, *args, **kwargs):
-#     #     """
-#     #     Handle POST requests: instantiate a form instance with the passed
-#     #     POST variables and then check if it's valid.
-#     #     """
-#     #     form = self.get_form()
-#     #     if form.is_valid():
-#     #         return self.form_valid(form)
-#     #     else:
-#     #         return self.form_invalid(form)
-#     #
-#     def form_valid(self, form):
-#         """If the form is valid, redirect to the supplied URL."""
-#         print("Form valid called!!")
-#         return HttpResponseRedirect(self.get_success_url())
-#     #
-#     # def form_invalid(self, form):
-#     #     print("Form invalid called!!")
-#     #     print("Request: ", self.request.POST)
-#     #
-#     # def get_form_kwargs(self):
-#     #     # kwargs = super().get_form_kwargs()
-#     #     print("Request method: ", self.request)
-#     #     kwargs = {}
-#     #     if self.request.POST:
-#     #         kwargs = {'user': self.request.user}
-#     #     return kwargs
+        else:
+            context = self.get_context_data(form=form)
+            return self.render_to_response(context=context)

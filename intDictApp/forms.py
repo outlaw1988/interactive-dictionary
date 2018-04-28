@@ -3,42 +3,41 @@ from django.core.exceptions import ValidationError
 from .models import SrcLanguage, TargetLanguage, Category, Set, Setup
 
 
-class CategoryForm(forms.ModelForm):
-    # TODO How to pass user?
-    def clean(self):
-        category_name = self.cleaned_data['name']
-        category_to_check = Category.objects.filter(name=category_name)
+class CategoryForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        if "user" in kwargs:
+            self.user = kwargs.pop('user')
+        super(CategoryForm, self).__init__(*args, **kwargs)
+        self.fields['category_name'] = forms.CharField(max_length=100,
+                                                       help_text="Please enter category name",
+                                                       required=True)
+        self.fields['default_source_language'] = forms.ModelChoiceField(queryset=SrcLanguage.objects.all())
+        self.fields['default_target_language'] = forms.ModelChoiceField(queryset=TargetLanguage.objects.all())
+
+        sides = (
+            ('left', 'left'),
+            ('right', 'right'))
+
+        self.fields['default_target_side'] = forms.ChoiceField(choices=sides)
+
+    def clean_category_name(self):
+        print("Clean category name called...")
+        print("User is: ", self.user)
+        print("Cleaned data: ", self.cleaned_data)
+        category_name = self.cleaned_data['category_name']
+        category_to_check = Category.objects.filter(name=category_name, user=self.user)
 
         if category_to_check.count() > 0:
-            self.add_error('name', ValidationError("This category already exists!"))
+            self.add_error('category_name', ValidationError("This category already exists!"))
 
+    def clean(self):
         if ("default_source_language" in self.cleaned_data) and \
-                ("default_target_language" in self.cleaned_data):
+                                ("default_target_language" in self.cleaned_data):
             src_language = self.cleaned_data['default_source_language']
             target_language = self.cleaned_data['default_target_language']
             if src_language.name == target_language.name:
-                # raise ValidationError("Languages are the same!")
                 self.add_error(None, ValidationError('Languages are the same'))
-        # self.cleaned_data['name'] = "Music2"
-        # return cleaned_data
-
-    # def clean_name(self):
-    #     print("Clean name called!!!!")
-    #     print("Cleaned data: ", self.cleaned_data)
-    #     #cleaned_data = super(CategoryForm, self).clean()
-    #     category_name = self.cleaned_data['name']
-    #     # TODO name is empty https://stackoverflow.com/questions/19864854/this-field-cannot-be-null-error-in-a-django-1-5-modelform
-    #     category_to_check = Category.objects.filter(name=category_name)
-    #
-    #     if category_to_check.count() > 0:
-    #         self.add_error(None,
-    #                        ValidationError("This category already exists!"))
-    #     #return cleaned_data
-
-    class Meta:
-        model = Category
-        fields = ['user', 'name', 'default_source_language', 'default_target_language',
-                  'default_target_side']
 
 
 class CategoryFormUpdate(forms.ModelForm):
@@ -146,26 +145,23 @@ class SetFormUpdate(forms.Form):
 
 class LanguageForm(forms.Form):
 
-    language_name = forms.CharField(max_length=100, help_text="Please enter language name")
-
     def __init__(self, *args, **kwargs):
         # print("Form kwargs: ", kwargs)
         if "user" in kwargs:
             self.user = kwargs.pop("user")
         super(LanguageForm, self).__init__(*args, **kwargs)
-        self.fields['language_name'].label = "Language name"
+        self.fields['language_name'] = forms.CharField(max_length=100,
+                                                       help_text="Please enter language name",
+                                                       required=True)
 
-    def clean(self):
-        # print("Clean language name called!!")
+    def clean_language_name(self):
+        print("Clean language name called!!")
         name = self.cleaned_data['language_name']
         src_language = SrcLanguage.objects.filter(user=self.user, name=name)
         target_language = TargetLanguage.objects.filter(user=self.user, name=name)
-        if src_language.count() > 0:
-            raise ValidationError('This language already exists!')
-        if target_language.count() > 0:
-            raise ValidationError('This language already exists!')
+        if src_language.count() > 0 or target_language.count() > 0:
+            self.add_error(None, ValidationError('This language already exists!'))
 
-        return name
 
 # class LanguageForm(forms.ModelForm):
 #

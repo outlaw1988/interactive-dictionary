@@ -5,7 +5,7 @@ from .views import category_view, set_view, exam_view
 urlpatterns = [
     path('', category_view.CategoriesList.as_view(), name='categories'),
     path('category/<int:pk>', set_view.category_sets_list, name='category-sets-list'),
-    path('add_category', category_view.CategoryAddWithForm.as_view(), name='add-category'),
+    path('add_category', category_view.CategoryAdd.as_view(), name='add-category'),
     path('edit_category/<int:pk>', category_view.CategoryUpdate.as_view(),
          name="edit-category"),
     path('add_set', set_view.add_set, name='add-set'),
@@ -14,7 +14,7 @@ urlpatterns = [
     path('exam_check', exam_view.ExamCheck.as_view(), name='exam-check'),
     path('exam_next', exam_view.ExamNext.as_view(), name='exam-next'),
     path('exam_summary', exam_view.ExamSummary.as_view(), name='exam-summary'),
-    path('add_language', category_view.add_language, name='add-language'),
+    path('add_language', category_view.LanguageAdd.as_view(), name='add-language'),
     path('update_set/<uuid:pk>', set_view.UpdateSet.as_view(), name='update-set'),
     path('remove_category/<int:pk>', category_view.RemoveCategory.as_view(),
          name="remove-category"),
