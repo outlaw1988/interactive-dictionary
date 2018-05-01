@@ -74,7 +74,6 @@ class CategoryFormUpdate(forms.Form):
         self.fields['default_target_side'].initial = self.category.default_target_side
 
     def clean_category_name(self):
-        print("Clean category name called...")
         category_name = self.cleaned_data['category_name']
         category_to_check = Category.objects.filter(name=category_name, user=self.user)
 

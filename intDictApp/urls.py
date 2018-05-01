@@ -4,12 +4,12 @@ from .views import category_view, set_view, exam_view, registration_view
 
 urlpatterns = [
     path('', category_view.CategoriesList.as_view(), name='categories'),
-    path('category/<int:pk>', set_view.category_sets_list, name='category-sets-list'),
+    path('category/<int:pk>', set_view.CategorySetsList.as_view(), name='category-sets-list'),
     path('add_category', category_view.CategoryAdd.as_view(), name='add-category'),
     path('edit_category/<int:pk>', category_view.CategoryUpdate.as_view(),
          name="edit-category"),
-    path('add_set', set_view.add_set, name='add-set'),
-    path('preview/<uuid:pk>', set_view.set_preview_list, name='set-preview-list'),
+    path('add_set', set_view.AddSet.as_view(), name='add-set'),
+    path('preview/<uuid:pk>', set_view.SetPreviewList.as_view(), name='set-preview-list'),
     path('exam', exam_view.ExamInit.as_view(), name='exam'),
     path('exam_check', exam_view.ExamCheck.as_view(), name='exam-check'),
     path('exam_next', exam_view.ExamNext.as_view(), name='exam-next'),

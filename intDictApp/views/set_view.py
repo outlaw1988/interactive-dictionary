@@ -5,58 +5,75 @@ from intDictApp.models import Category, Set, Setup, Word, SrcLanguage, TargetLan
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from intDictApp.utils import *
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 from intDictApp.forms import SetForm, SetFormUpdate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 
 
-@login_required
-def category_sets_list(request, pk):
-    category = Category.objects.get(id=pk)
-    request.session['category_name'] = category.name
-    request.session['category_id'] = pk
+class CategorySetsList(LoginRequiredMixin, TemplateView):
 
-    sets = Set.objects.filter(category=category)
-    word_counters = []
+    template_name = "intDictApp/category_sets_list.html"
 
-    for set in sets:
-        words = Word.objects.filter(set=set)
-        word_counters.append(words.count())
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        category = Category.objects.get(id=self.kwargs['pk'])
 
-    context = {
-        'category': category,
-        'sets': sets,
-        'word_counters': word_counters
-    }
+        self.request.session['category_name'] = category.name
+        self.request.session['category_id'] = self.kwargs['pk']
 
-    return render(request, 'intDictApp/category_sets_list.html', context)
+        sets = Set.objects.filter(category=category)
+        word_counters = []
+
+        for set in sets:
+            words = Word.objects.filter(set=set)
+            word_counters.append(words.count())
+
+        data['sets'] = sets
+        data['category'] = category
+        data['word_counters'] = word_counters
+
+        return data
 
 
-@login_required
-def add_set(request):
-    table_list = list(range(1, 11))
-    category = Category.objects.filter(id=request.session['category_id'])[0]
+class AddSet(LoginRequiredMixin, TemplateView):
 
-    def_src_language = category.default_source_language
-    def_target_language = category.default_target_language
-    target_side = category.default_target_side
+    template_name = "intDictApp/add_new_set.html"
 
-    form = SetForm(user=request.user, category=category)
-    context = {
-        'id': request.session['category_id'],
-        'tableLen': table_list,
-        'src_language': def_src_language,
-        'target_language': def_target_language,
-        'target_side': target_side,
-        'form': form
-    }
+    def get_context_data(self, **kwargs):
+        category = Category.objects.get(id=self.request.session['category_id'])
 
-    if request.method == 'POST':
+        if "form" not in kwargs:
+            # GET request
+            form = SetForm(category=category, user=self.request.user)
+        else:
+            # POST request
+            form = kwargs['form']
+
+        table_list = list(range(1, 11))
+
+        def_src_language = category.default_source_language
+        def_target_language = category.default_target_language
+        target_side = category.default_target_side
+
+        context = {
+            'id': self.request.session['category_id'],
+            'tableLen': table_list,
+            'src_language': def_src_language,
+            'target_language': def_target_language,
+            'target_side': target_side,
+            'form': form
+        }
+        return context
+
+    def post(self, request, **kwargs):
+        category = Category.objects.get(id=self.request.session['category_id'])
+        def_src_language = category.default_source_language
+        def_target_language = category.default_target_language
+
         set_name = request.POST['set_name']
         current_user = request.user
-        words_set = Set(user=current_user, category=category,
-                        name=set_name)
+        words_set = Set(user=current_user, category=category, name=set_name)
 
         target_language = request.POST['target_language']
         src_language = ""
@@ -100,9 +117,8 @@ def add_set(request):
                 words = Word(set=words_set, src_word=src_word, target_word=target_word)
                 words.save()
 
-        return HttpResponseRedirect(reverse('category-sets-list', kwargs={'pk': context["id"]}))
-    else:
-        return render(request, 'intDictApp/add_new_set.html', context)
+        return HttpResponseRedirect(reverse('category-sets-list',
+                                            kwargs={'pk': self.request.session['category_id']}))
 
 
 class UpdateSet(LoginRequiredMixin, TemplateView):
@@ -203,27 +219,29 @@ class UpdateSet(LoginRequiredMixin, TemplateView):
                                             kwargs={'pk': self.request.session['category_id']}))
 
 
-@login_required
-def set_preview_list(request, pk):
-    # pk - set UUID
-    words_set = Set.objects.filter(id=pk)[0]
-    request.session['set_name'] = words_set.name
-    request.session['set_id'] = str(pk)
+class SetPreviewList(LoginRequiredMixin, TemplateView):
 
-    words = Word.objects.filter(set=words_set)
-    setup = Setup.objects.filter(set=words_set)
-    src_language = setup[0].src_language
-    target_language = setup[0].target_language
+    template_name = "intDictApp/words_preview.html"
 
-    context = {
-        'set': words_set,
-        'words': words,
-        'category_id': request.session['category_id'],
-        'src_language': src_language,
-        'target_language': target_language
-    }
+    def get_context_data(self, **kwargs):
+        words_set = Set.objects.get(id=self.kwargs['pk'])
+        self.request.session['set_name'] = words_set.name
+        self.request.session['set_id'] = str(self.kwargs['pk'])
 
-    return render(request, 'intDictApp/words_preview.html', context)
+        words = Word.objects.filter(set=words_set)
+        setup = Setup.objects.get(set=words_set)
+        src_language = setup.src_language
+        target_language = setup.target_language
+
+        context = {
+            'set': words_set,
+            'words': words,
+            'category_id': self.request.session['category_id'],
+            'src_language': src_language,
+            'target_language': target_language
+        }
+
+        return context
 
 
 class RemoveSet(LoginRequiredMixin, TemplateView):
