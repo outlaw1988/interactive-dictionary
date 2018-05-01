@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<h2>Welcome to interactive dictionary</h2>
+<br>
 <h3>Login page</h3>
 
 <br>
@@ -38,7 +40,9 @@
 </div>
 </form>
 
-{# Assumes you setup the password_reset view in your URLconf #}
-<p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+<!-- {# Assumes you setup the password_reset view in your URLconf #}
+<p><a href="{% url 'password_reset' %}">Lost password?</a></p> -->
+<br>
+<p><a href="{% url 'sign-up' %}">Sign up?</a></p>
 
 {% endblock %}

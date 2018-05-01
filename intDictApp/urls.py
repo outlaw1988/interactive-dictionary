@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import category_view, set_view, exam_view
+from .views import category_view, set_view, exam_view, registration_view
 
 
 urlpatterns = [
@@ -18,5 +18,6 @@ urlpatterns = [
     path('update_set/<uuid:pk>', set_view.UpdateSet.as_view(), name='update-set'),
     path('remove_category/<int:pk>', category_view.RemoveCategory.as_view(),
          name="remove-category"),
-    path('remove_set/<uuid:pk>', set_view.RemoveSet.as_view(), name='remove-set')
+    path('remove_set/<uuid:pk>', set_view.RemoveSet.as_view(), name='remove-set'),
+    path('sign_up', registration_view.SignUp.as_view(), name='sign-up')
 ]

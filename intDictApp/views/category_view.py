@@ -42,7 +42,7 @@ class CategoryAdd(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         if "form" not in kwargs:
             # GET request
-            form = CategoryForm()
+            form = CategoryForm(user=self.request.user)
         else:
             # POST request
             form = kwargs['form']
@@ -80,7 +80,7 @@ class CategoryUpdate(LoginRequiredMixin, TemplateView):
         category = Category.objects.filter(id=self.kwargs['pk'])[0]
         if "form" not in kwargs:
             # GET request
-            form = CategoryFormUpdate(category=category)
+            form = CategoryFormUpdate(category=category, user=self.request.user)
         else:
             # POST request
             form = kwargs['form']

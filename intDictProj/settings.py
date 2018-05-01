@@ -25,7 +25,7 @@ SECRET_KEY = '1%q+!1=920jdq62x-@%4*to=1vd@@6#dtl$!i$d=-z9%h!h7ys'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['outlaw1988.pythonanywhere.com']
+ALLOWED_HOSTS = ['outlaw1988.pythonanywhere.com', 'localhost']
 
 
 # Application definition
@@ -55,7 +55,7 @@ ROOT_URLCONF = 'intDictProj.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['interactive-dictionary/templates'],
+        'DIRS': ['interactive-dictionary/templates', './templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

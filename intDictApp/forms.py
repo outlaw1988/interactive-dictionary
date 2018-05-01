@@ -1,6 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import SrcLanguage, TargetLanguage, Category, Set, Setup
+from .models import SrcLanguage, TargetLanguage, Category, Set, Setup, User
+
+from django.contrib.auth.forms import UserCreationForm
 
 
 class CategoryForm(forms.Form):
@@ -12,8 +14,11 @@ class CategoryForm(forms.Form):
         self.fields['category_name'] = forms.CharField(max_length=100,
                                                        help_text="Please enter category name",
                                                        required=True)
-        self.fields['default_source_language'] = forms.ModelChoiceField(queryset=SrcLanguage.objects.all())
-        self.fields['default_target_language'] = forms.ModelChoiceField(queryset=TargetLanguage.objects.all())
+
+        self.fields['default_source_language'] = \
+            forms.ModelChoiceField(queryset=SrcLanguage.objects.filter(user=self.user))
+        self.fields['default_target_language'] = \
+            forms.ModelChoiceField(queryset=TargetLanguage.objects.filter(user=self.user))
 
         sides = (
             ('left', 'left'),
@@ -52,9 +57,13 @@ class CategoryFormUpdate(forms.Form):
                                                        help_text="Please enter category name",
                                                        required=True)
         self.fields['category_name'].initial = self.category.name
-        self.fields['default_source_language'] = forms.ModelChoiceField(queryset=SrcLanguage.objects.all())
+
+        self.fields['default_source_language'] = \
+            forms.ModelChoiceField(queryset=SrcLanguage.objects.filter(user=self.user))
         self.fields['default_source_language'].initial = self.category.default_source_language
-        self.fields['default_target_language'] = forms.ModelChoiceField(queryset=TargetLanguage.objects.all())
+
+        self.fields['default_target_language'] = \
+            forms.ModelChoiceField(queryset=TargetLanguage.objects.filter(user=self.user))
         self.fields['default_target_language'].initial = self.category.default_target_language
 
         sides = (
@@ -217,3 +226,13 @@ class LanguageForm(forms.Form):
 #     class Meta:
 #         model = SrcLanguage
 #         fields = ['user', 'name']
+
+
+class SignUpForm(UserCreationForm):
+    # first_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
+    # last_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
+    email = forms.EmailField(max_length=254, help_text='Required. Inform a valid email address.')
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
