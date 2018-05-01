@@ -2,6 +2,8 @@
 
 {% block content %}
 
+<h3>Sign up</h3>
+
 <br>
 <form method="post" novalidate>
   {% csrf_token %}
@@ -36,12 +38,9 @@
       {% endfor %}
     </ul>
   {% endif %}
-  
+
   <br>
   <button type="submit" class="btn btn-primary">Apply</button>
 </form>
 
-<br>
-
-<a href="{% url 'categories' %}">Go back</a>
 {% endblock %}

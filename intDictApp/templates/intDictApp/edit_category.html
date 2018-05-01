@@ -3,7 +3,9 @@
 {% block content %}
 
 <br>
-<form method="post" novalidate>
+
+<form action="{% url 'edit-category' category_id %}" method="post">
+
   {% csrf_token %}
 
   {% for hidden_field in form.hidden_fields %}
@@ -36,7 +38,7 @@
       {% endfor %}
     </ul>
   {% endif %}
-  
+
   <br>
   <button type="submit" class="btn btn-primary">Apply</button>
 </form>

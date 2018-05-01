@@ -2,16 +2,40 @@
 
 {% block content %}
 <br>
-<form action = "" method="post">
+<form method="post" novalidate>
     {% csrf_token %}
-    <table>
-    {{ form }}
-    </table>
-    <br>
-    <!-- <label for="language_name">New language name:</label><br />
-    <input type="text" name="language_name" id="language_name" />
-    <br><br> -->
-    <input type="submit" value="Apply" />
+    {% for hidden_field in form.hidden_fields %}
+      {{ hidden_field }}
+    {% endfor %}
+
+    {% for field in form.visible_fields %}
+      <div class="form-group">
+        {{ field.label_tag }} <br>
+        {{ field }}
+
+        {% if field.errors %}
+          <ul>
+            {% for error in field.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if field.help_text %}
+          <small class="form-text text-muted">{{ field.help_text }}</small>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+      <ul>
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary">Apply</button>
 </form>
 <br>
 <a href="{% url 'categories' %}">Cancel</a>

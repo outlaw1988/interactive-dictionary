@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h3>Exam summary for category: {{category.name}}, set: {{set.name}}</h3>
+<h3>Exam summary for category: {{category_name}}, set: {{set.name}}</h3>
 
 <p>Your current result: {{last_result}}%</p>
 <p>Your best result: {{best_result}}%</p>
@@ -11,33 +11,31 @@
 
 <table class="tables">
   <tr>
-    <th class="table-headers">Source language</th>
-    <th class="table-headers">Target language</th>
+      <th class="table-headers">Source language</th>
+      <th class="table-headers">Target language</th>
   </tr>
     <tr>
-    <th class="table-headers">{{setup.src_language}}</th>
-    <th class="table-headers">{{setup.target_language}}</th>
+      <th class="table-headers">{{src_language}}</th>
+      <th class="table-headers">{{target_language}}</th>
   </tr>
 
 <script language="javascript" type="text/javascript">
 
     var answers_list = {{answers_list|safe}};
     var array_length = answers_list.length;
-    var src_words = {{src_words|safe}}
-    var target_words = {{target_words|safe}}
+    var src_words = {{src_words|safe}};
+    var target_words = {{target_words|safe}};
 
     var table_html = "";
 
     for (var i = 0; i < array_length; i++) {
-        //console.log(answers_list[i]);
-
+      
         if (answers_list[i] == 1){
             table_html += "<tr> <td align='center' style='color: #008000;'>" + src_words[i].toString() + "</td> <td align='center' style='color: #008000;'>" + target_words[i].toString() + "</td> </tr>";
         }
         else if (answers_list[i] == 0) {
             table_html += "<tr> <td align='center' style='color: #ff0000;'>" + src_words[i].toString() + "</td> <td align='center' style='color: #ff0000;'>" + target_words[i].toString() + "</td> </tr>";
         }
-
     }
 
     table_html += "</table>"
