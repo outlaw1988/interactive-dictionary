@@ -3,22 +3,21 @@
 {% block content %}
 <h2>Sets list for category: {{ category.name }}</h2>
 
-  <ul>
     {% load index %}
     {% for set in sets %}
 
-      <form method="post">
-          <li><a href="{{ set.get_absolute_url }}">{{set.name}}</a>
-            <a> words: {{ word_counters|index:forloop.counter0 }}</a>
-            <a href="{{ set.get_edit_url }}">edit</a>
-            <a href="{{ set.get_remove_url }}">remove</a>
-          </li>
-      </form>
+        <div class="set-box"><a href="{{ set.get_absolute_url }}">{{set.name}}</a>
+          <br><span>words: {{ word_counters|index:forloop.counter0 }}</span>
+          <br><span>last result: {{last_results|index:forloop.counter0}}%</span>
+          <br><span>best result: {{best_results|index:forloop.counter0}}%</span>
+          <br><a href="{{ set.get_edit_url }}">edit</a>
+          <a href="{{ set.get_remove_url }}">remove</a>
+        </div>
 
     {% endfor %}
 
-  </ul>
-
-        <a href="{% url 'add-set' %}">Add set</a>
+    <a href="{% url 'add-set' %}">
+        <button type="button" class="btn btn-primary">Add set</button>
+    </a>
 
 {% endblock %}

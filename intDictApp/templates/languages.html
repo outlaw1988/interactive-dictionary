@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h2>Languages list:</h2>
+
+    {% for language in src_languages %}
+
+        <div class="set-box">
+          <span>{{language.name}}</span>
+          <br><a href="{{language.get_remove_url}}">remove</a>
+        </div>
+
+    {% endfor %}
+
+    <a href="{% url 'add-language' %}">
+      <button type="button" class="btn btn-primary">Add language</button>
+    </a>
+
+{% endblock %}

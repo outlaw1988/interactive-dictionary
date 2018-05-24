@@ -170,7 +170,6 @@ class SetFormUpdate(forms.Form):
 class LanguageForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        # print("Form kwargs: ", kwargs)
         if "user" in kwargs:
             self.user = kwargs.pop("user")
         super(LanguageForm, self).__init__(*args, **kwargs)
@@ -179,7 +178,6 @@ class LanguageForm(forms.Form):
                                                        required=True)
 
     def clean_language_name(self):
-        print("Clean language name called!!")
         name = self.cleaned_data['language_name']
         src_language = SrcLanguage.objects.filter(user=self.user, name=name)
         target_language = TargetLanguage.objects.filter(user=self.user, name=name)

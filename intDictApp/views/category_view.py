@@ -33,7 +33,7 @@ class CategoriesList(LoginRequiredMixin, ListView):
         return data
 
     def get_queryset(self):
-        return Category.objects.filter(user=self.request.user)
+        return Category.objects.filter(user=self.request.user).order_by('name')
 
 
 class CategoryAdd(LoginRequiredMixin, TemplateView):
@@ -53,6 +53,7 @@ class CategoryAdd(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request):
+        print("POST request: ", request.POST)
         form = CategoryForm(request.POST, user=self.request.user)
         if form.is_valid():
             category_name = request.POST['category_name']
@@ -96,7 +97,6 @@ class CategoryUpdate(LoginRequiredMixin, TemplateView):
         form = CategoryFormUpdate(request.POST, user=self.request.user, category=category,
                                   prev_name=category.name)
         if form.is_valid():
-            print("Form is valid!")
             category_name = request.POST['category_name']
             def_src_lan_id = request.POST['default_source_language']
             def_src_lan = SrcLanguage.objects.filter(id=def_src_lan_id)[0]
@@ -113,7 +113,6 @@ class CategoryUpdate(LoginRequiredMixin, TemplateView):
 
             return HttpResponseRedirect(reverse('categories'))
         else:
-            print("Invalid form!")
             context = self.get_context_data(form=form)
             return self.render_to_response(context=context)
 
@@ -203,7 +202,43 @@ class LanguageAdd(LoginRequiredMixin, TemplateView):
             target_language = TargetLanguage(user=self.request.user, name=language_name)
             src_language.save()
             target_language.save()
-            return HttpResponseRedirect(reverse('categories'))
+            return HttpResponseRedirect(reverse('languages'))
         else:
             context = self.get_context_data(form=form)
             return self.render_to_response(context=context)
+
+
+class Languages(LoginRequiredMixin, ListView):
+
+    model = SrcLanguage
+    template_name = "languages.html"
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        src_languages = SrcLanguage.objects.filter(user=self.request.user)
+        data['src_languages'] = src_languages
+
+        return data
+
+
+class RemoveLanguage(LoginRequiredMixin, TemplateView):
+
+    template_name = "intDictApp/remove_language.html"
+
+    def get_context_data(self, **kwargs):
+        language = SrcLanguage.objects.get(id=kwargs['pk'])
+        context = {
+            'language_name': language.name,
+            'language_id': kwargs['pk']
+        }
+        return context
+
+    def post(self, request, **kwargs):
+
+        if "yes" in request.POST:
+            src_language = SrcLanguage.objects.get(id=kwargs['pk'])
+            language_name = src_language.name
+            src_language.delete()
+            TargetLanguage.objects.filter(name=language_name, user=self.request.user).delete()
+
+        return HttpResponseRedirect(reverse('languages'))

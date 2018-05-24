@@ -9,7 +9,7 @@
 
 <h3 align="center">Words list</h3>
 
-<table class="tables">
+<table class="table-add-set">
   <tr>
       <th class="table-headers">Source language</th>
       <th class="table-headers">Target language</th>
@@ -29,7 +29,7 @@
     var table_html = "";
 
     for (var i = 0; i < array_length; i++) {
-      
+
         if (answers_list[i] == 1){
             table_html += "<tr> <td align='center' style='color: #008000;'>" + src_words[i].toString() + "</td> <td align='center' style='color: #008000;'>" + target_words[i].toString() + "</td> </tr>";
         }

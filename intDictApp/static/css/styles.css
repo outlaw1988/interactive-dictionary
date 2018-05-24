@@ -5,7 +5,7 @@
 }
 
 .words-list-header {
-    text-align: center;
+    text-align: left;
 }
 
 .table-headers {
@@ -13,6 +13,12 @@
 }
 
 .tables {
+    width: 25vw;
+    /* margin-left: 25%;
+    margin-right: 25%; */
+}
+
+.table-add-set {
     width: 50%;
     margin-left: 25%;
     margin-right: 25%;
@@ -25,4 +31,20 @@
 .form-table {
     border-spacing: 15px;
     border-collapse: separate;
+}
+
+.category {
+    border: 1px solid #000;
+    margin-bottom: 10px;
+    width: 12vw;
+    display: block;
+    text-align: center;
+}
+
+.set-box {
+    border: 1px solid #000;
+    margin-bottom: 10px;
+    width: 12vw;
+    display: block;
+    text-align: center;
 }
