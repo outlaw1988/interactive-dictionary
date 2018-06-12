@@ -15,7 +15,7 @@ class CategoriesList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        categories = Category.objects.filter(user=self.request.user)
+        categories = Category.objects.filter(user=self.request.user).order_by('id')
         set_counters = []
         word_counters = []
 
@@ -33,7 +33,7 @@ class CategoriesList(LoginRequiredMixin, ListView):
         return data
 
     def get_queryset(self):
-        return Category.objects.filter(user=self.request.user).order_by('name')
+        return Category.objects.filter(user=self.request.user).order_by('id')
 
 
 class CategoryAdd(LoginRequiredMixin, TemplateView):
@@ -53,7 +53,7 @@ class CategoryAdd(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request):
-        print("POST request: ", request.POST)
+        #print("POST request: ", request.POST)
         form = CategoryForm(request.POST, user=self.request.user)
         if form.is_valid():
             category_name = request.POST['category_name']

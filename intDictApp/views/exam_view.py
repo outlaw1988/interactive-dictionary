@@ -14,9 +14,9 @@ config = ExamConfig()
 
 class ExamInit(LoginRequiredMixin, TemplateView):
     template_name = 'intDictApp/exam.html'
-    config.clean_up()
 
     def get_context_data(self, **kwargs):
+        config.clean_up()
         category = Category.objects.filter(id=self.request.session['category_id'])[0]
         words_set = Set.objects.filter(id=self.request.session['set_id'])[0]
 
