@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from django.shortcuts import render
 from intDictApp.models import Category, Set, Setup, Word, SrcLanguage, TargetLanguage
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from intDictApp.utils import *
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView
 from intDictApp.forms import SetForm, SetFormUpdate
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
 
 
 class CategorySetsList(LoginRequiredMixin, TemplateView):
@@ -22,16 +20,23 @@ class CategorySetsList(LoginRequiredMixin, TemplateView):
         self.request.session['category_name'] = category.name
         self.request.session['category_id'] = self.kwargs['pk']
 
-        sets = Set.objects.filter(category=category)
+        sets = Set.objects.filter(category=category).order_by('name')
         word_counters = []
+        last_results = []
+        best_results = []
 
         for set in sets:
             words = Word.objects.filter(set=set)
+            setup = Setup.objects.get(set=set)
+            last_results.append(setup.last_result)
+            best_results.append(setup.best_result)
             word_counters.append(words.count())
 
         data['sets'] = sets
         data['category'] = category
         data['word_counters'] = word_counters
+        data['last_results'] = last_results
+        data['best_results'] = best_results
 
         return data
 
@@ -266,5 +271,3 @@ class RemoveSet(LoginRequiredMixin, TemplateView):
 
         return HttpResponseRedirect(reverse('category-sets-list',
                                             kwargs={'pk': self.request.session['category_id']}))
-
-

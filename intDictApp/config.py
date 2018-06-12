@@ -22,6 +22,7 @@ class ExamConfig:
         shuffle(self.shuffled_idxes)
 
     def clean_up(self):
+        #print("Clean up called...")
         self.shuffled_idxes = None
         self.current_word_idx = 0
         self.size = 0

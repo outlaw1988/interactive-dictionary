@@ -67,6 +67,9 @@ class SrcLanguage(models.Model):
     def __str__(self):
         return self.name
 
+    def get_remove_url(self):
+        return reverse('remove-language', args=[str(self.id)])
+
 
 class TargetLanguage(models.Model):
 

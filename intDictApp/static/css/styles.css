@@ -5,7 +5,7 @@
 }
 
 .words-list-header {
-    text-align: center;
+    text-align: left;
 }
 
 .table-headers {
@@ -13,6 +13,12 @@
 }
 
 .tables {
+    width: 25vw;
+    /* margin-left: 25%;
+    margin-right: 25%; */
+}
+
+.table-add-set {
     width: 50%;
     margin-left: 25%;
     margin-right: 25%;
@@ -25,4 +31,134 @@
 .form-table {
     border-spacing: 15px;
     border-collapse: separate;
+}
+
+.category {
+    border: 1px solid #000;
+    margin-bottom: 10px;
+    width: 200px;
+    text-align: center;
+    /* display: block;
+    text-align: center;
+    position: relative; */
+}
+
+.set-box {
+    border: 1px solid #000;
+    margin-bottom: 10px;
+    width: 200px;
+    display: block;
+    text-align: center;
+}
+
+.three-dots {
+    position: absolute;
+    top: 5px;
+    right: 0;
+}
+
+.category-name {
+    display: inline-block;
+    margin: 0 auto;
+    width: 100px;
+    height: 20px;
+    /* background: #00ff00; */
+}
+
+.box-title {
+    display: inline-block;
+    margin: 0 auto;
+    width: 100px;
+    height: 20px;
+    /* background: #00ff00; */
+}
+
+.dropdown {
+    float: right;
+    width: 20px;
+    height: 20px;
+    /* background: #0000ff; */
+}
+
+.left-side {
+    float: left;
+    width: 20px;
+    height: 20px;
+    /* background: #ff0000; */
+}
+
+.dropdown-content {
+    font-size: 12px;
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 100px;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.show {
+    display:block;
+}
+
+/* .dropdown {
+    background-color: green;
+    position: absolute;
+    top: 5px;
+    right: 0;
+} */
+
+
+
+/* #container {
+    width:100%;
+    text-align:center;
+}
+
+#left {
+    float:left;
+    width:100px;
+    height: 20px;
+    background: #ff0000;
+}
+
+#center {
+    display: inline-block;
+    margin:0 auto;
+    width:100px;
+    height: 20px;
+    background: #00ff00;
+}
+
+#right {
+    float:right;
+    width:100px;
+    height: 20px;
+    background: #0000ff;
+} */
+
+@media (max-width: 570px) {
+  .category {
+      border: 1px solid #000;
+      margin-bottom: 10px;
+      width: 90vw;
+      display: block;
+      text-align: center;
+  }
+
+  .set-box {
+      border: 1px solid #000;
+      margin-bottom: 10px;
+      width: 90vw;
+      display: block;
+      text-align: center;
+  }
 }
