@@ -26,6 +26,15 @@ class CategoryForm(forms.Form):
 
         self.fields['default_target_side'] = forms.ChoiceField(choices=sides)
 
+        choices_countdown = (
+            (30, 30),
+            (20, 20),
+            (10, 10),
+            (5, 5))
+
+        self.fields['default_countdown_duration'] = forms.ChoiceField(choices=choices_countdown,
+                                                                      initial=20)
+
     def clean_category_name(self):
         category_name = self.cleaned_data['category_name']
         category_to_check = Category.objects.filter(name=category_name, user=self.user)
@@ -73,6 +82,17 @@ class CategoryFormUpdate(forms.Form):
         self.fields['default_target_side'] = forms.ChoiceField(choices=sides)
         self.fields['default_target_side'].initial = self.category.default_target_side
 
+        choices_countdown = (
+            (30, 30),
+            (20, 20),
+            (10, 10),
+            (5, 5))
+
+        init_countdown = self.category.default_countdown_duration
+
+        self.fields['default_countdown_duration'] = forms.ChoiceField(choices=choices_countdown,
+                                                                      initial=init_countdown)
+
     def clean_category_name(self):
         category_name = self.cleaned_data['category_name']
         category_to_check = Category.objects.filter(name=category_name, user=self.user)
@@ -99,7 +119,7 @@ class SetForm(forms.Form):
                                                   help_text="Please enter set name")
         self.fields['set_name'].label = "Set name"
 
-        category = Category.objects.filter(user=self.user, name=self.category_name)[0]
+        category = Category.objects.get(user=self.user, name=self.category_name)
         src_lan = category.default_source_language.name
         target_lan = category.default_target_language.name
         target_side = category.default_target_side
@@ -124,6 +144,17 @@ class SetForm(forms.Form):
 
         self.fields['target_side'] = forms.ChoiceField(choices=sides)
 
+        choices_countdown = (
+            (30, 30),
+            (20, 20),
+            (10, 10),
+            (5, 5))
+
+        init_countdown = category.default_countdown_duration
+
+        self.fields['countdown_duration'] = forms.ChoiceField(choices=choices_countdown,
+                                                              initial=init_countdown)
+
     # def clean_set_name(self):
     #     set_name = self.cleaned_data['set_name']
     #     set_to_check = Set.objects.filter(user=self.user, name=set_name, category=self.category)
@@ -142,7 +173,7 @@ class SetFormUpdate(forms.Form):
                                                   help_text="Please enter set name")
         self.fields['set_name'].initial = self.set.name
 
-        setup = Setup.objects.filter(set=self.set)[0]
+        setup = Setup.objects.get(set=self.set)
         target_language = setup.target_language.name
         src_language = setup.src_language.name
 
@@ -165,6 +196,17 @@ class SetFormUpdate(forms.Form):
             (source_side, source_side))
 
         self.fields['target_side'] = forms.ChoiceField(choices=sides)
+
+        choices_countdown = (
+            (30, 30),
+            (20, 20),
+            (10, 10),
+            (5, 5))
+
+        init_countdown = setup.countdown_duration
+
+        self.fields['countdown_duration'] = forms.ChoiceField(choices=choices_countdown,
+                                                              initial=init_countdown)
 
 
 class LanguageForm(forms.Form):

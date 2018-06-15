@@ -22,6 +22,16 @@ class Category(models.Model):
     default_target_side = models.CharField(max_length=5, choices=sides, default='left',
                                            help_text="Target language default side")
 
+    choices = (
+        (30, 30),
+        (20, 20),
+        (10, 10),
+        (5, 5))
+
+    default_countdown_duration = models.IntegerField(choices=choices, default=20,
+                                                     help_text="Default countdown during exam",
+                                                     null=True)
+
     def __str__(self):
         return self.name
 
@@ -98,6 +108,16 @@ class Setup(models.Model):
                                    help_text="Target language side")
     last_result = models.IntegerField(default=0)
     best_result = models.IntegerField(default=0)
+
+    choices = (
+        (30, 30),
+        (20, 20),
+        (10, 10),
+        (5, 5)
+    )
+
+    countdown_duration = models.IntegerField(choices=choices, help_text="Countdown during exam",
+                                             null=True)
 
     def __str__(self):
         return str(self.set)
