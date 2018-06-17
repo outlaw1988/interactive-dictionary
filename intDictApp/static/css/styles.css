@@ -130,6 +130,14 @@
     width: 50%;
 }
 
+.secs-left-div {
+    width: 50%;
+}
+
+.secs-left-div #secs-left {
+    float: right;
+}
+
 @media (max-width: 570px) {
     .category {
         border: 1px solid #000;
@@ -148,6 +156,10 @@
     }
 
     .progress {
+        width: 100%;
+    }
+
+    .secs-left-div {
         width: 100%;
     }
 }

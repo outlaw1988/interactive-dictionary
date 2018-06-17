@@ -229,10 +229,25 @@ class RemoveLanguage(LoginRequiredMixin, TemplateView):
     template_name = "intDictApp/remove_language.html"
 
     def get_context_data(self, **kwargs):
-        language = SrcLanguage.objects.get(id=kwargs['pk'])
+
+        src_language = SrcLanguage.objects.get(id=kwargs['pk'])
+        target_language = TargetLanguage.objects.get(name=src_language.name,
+                                                     user=self.request.user)
+
+        src_lan_count_in_use = Category.objects.filter(user=self.request.user,
+                                                       default_source_language=src_language).count()
+        target_lan_count_in_use = Category.objects.filter(user=self.request.user,
+                                                          default_target_language=target_language).count()
+
+        is_in_use = False
+
+        if src_lan_count_in_use > 0 or target_lan_count_in_use > 0:
+            is_in_use = True
+
         context = {
-            'language_name': language.name,
-            'language_id': kwargs['pk']
+            'language_name': src_language.name,
+            'language_id': kwargs['pk'],
+            'is_in_use': is_in_use
         }
         return context
 

@@ -4,13 +4,16 @@
 
 <h3>Exam is performing for category: {{category.name}}, set: {{set.name}}</h3>
 
-
 <br><br>
 
 <div class="progress">
   <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:100%">
     <span class="sr-only">70% Complete</span>
   </div>
+</div>
+
+<div class="secs-left-div">
+    <span id="secs-left">5 second(s) left</span>
 </div>
 
 <br><br>
@@ -46,6 +49,7 @@ Translate word: <span id="src_word">{{src_word}}</span>
 
     var check_word = function () {
         //console.log("Check word called...");
+        stop_timeout();
         document.getElementById("answer").disabled = true;
 
         var url = "{% url 'exam-check' %}";
@@ -132,6 +136,7 @@ Translate word: <span id="src_word">{{src_word}}</span>
         // console.log("Percent left: " + percent);
         var percentStr = percent.toString() + "%";
         document.getElementById("progress-bar").style.width = percentStr;
+        document.getElementById("secs-left").innerHTML = timeleft.toString() + " second(s) left";
         if(timeleft >= 0) {
             time_out_control = setTimeout(function() {
                 progress(timeleft - 1, timetotal);
