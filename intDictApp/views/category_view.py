@@ -53,7 +53,6 @@ class CategoryAdd(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request):
-        #print("POST request: ", request.POST)
         form = CategoryForm(request.POST, user=self.request.user)
         if form.is_valid():
             category_name = request.POST['category_name']
@@ -62,9 +61,11 @@ class CategoryAdd(LoginRequiredMixin, TemplateView):
             def_target_lan_id = request.POST['default_target_language']
             def_target_lan = TargetLanguage.objects.filter(id=def_target_lan_id)[0]
             def_target_side = request.POST['default_target_side']
+            def_cntdwn_duration = request.POST['default_countdown_duration']
             category = Category(name=category_name, default_source_language=def_src_lan,
                                 default_target_language=def_target_lan,
-                                default_target_side=def_target_side, user=self.request.user)
+                                default_target_side=def_target_side, user=self.request.user,
+                                default_countdown_duration=def_cntdwn_duration)
             category.save()
 
             return HttpResponseRedirect(reverse('categories'))
@@ -103,12 +104,14 @@ class CategoryUpdate(LoginRequiredMixin, TemplateView):
             def_target_lan_id = request.POST['default_target_language']
             def_target_lan = TargetLanguage.objects.filter(id=def_target_lan_id)[0]
             def_target_side = request.POST['default_target_side']
+            def_cntdwn_duration = request.POST['default_countdown_duration']
 
             category = Category.objects.filter(id=self.kwargs['pk'])[0]
             category.name = category_name
             category.default_source_language = def_src_lan
             category.default_target_language = def_target_lan
             category.default_target_side = def_target_side
+            category.default_countdown_duration = def_cntdwn_duration
             category.save()
 
             return HttpResponseRedirect(reverse('categories'))
@@ -226,10 +229,25 @@ class RemoveLanguage(LoginRequiredMixin, TemplateView):
     template_name = "intDictApp/remove_language.html"
 
     def get_context_data(self, **kwargs):
-        language = SrcLanguage.objects.get(id=kwargs['pk'])
+
+        src_language = SrcLanguage.objects.get(id=kwargs['pk'])
+        target_language = TargetLanguage.objects.get(name=src_language.name,
+                                                     user=self.request.user)
+
+        src_lan_count_in_use = Category.objects.filter(user=self.request.user,
+                                                       default_source_language=src_language).count()
+        target_lan_count_in_use = Category.objects.filter(user=self.request.user,
+                                                          default_target_language=target_language).count()
+
+        is_in_use = False
+
+        if src_lan_count_in_use > 0 or target_lan_count_in_use > 0:
+            is_in_use = True
+
         context = {
-            'language_name': language.name,
-            'language_id': kwargs['pk']
+            'language_name': src_language.name,
+            'language_id': kwargs['pk'],
+            'is_in_use': is_in_use
         }
         return context
 

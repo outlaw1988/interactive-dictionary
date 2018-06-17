@@ -94,9 +94,11 @@ class AddSet(LoginRequiredMixin, TemplateView):
                                                       name=def_target_language.name)[0]
 
         target_side = request.POST['target_side']
+        countdown_duration = request.POST['countdown_duration']
 
         setup = Setup(set=words_set, src_language=src_language, target_language=target_language,
-                      target_side=target_side, last_result=0, best_result=0)
+                      target_side=target_side, last_result=0, best_result=0,
+                      countdown_duration=countdown_duration)
         words_set.save()
         setup.save()
 
@@ -191,6 +193,8 @@ class UpdateSet(LoginRequiredMixin, TemplateView):
 
         target_side = request.POST['target_side']
         setup.target_side = target_side
+        setup.countdown_duration = request.POST['countdown_duration']
+
         setup.save()
         # End setup
 

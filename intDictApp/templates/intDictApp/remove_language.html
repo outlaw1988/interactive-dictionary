@@ -2,15 +2,28 @@
 
 {% block content %}
 
-<br>
-<p>Are you sure you want to remove language: {{ language_name }}?</p>
+{% if is_in_use %}
 
-<form action="{% url 'remove-language' language_id %}" method="post">
-  {% csrf_token %}
+    <br>
+    <p>Removing is not possible, because this language is in use.</p>
+    <br>
+    <a href="{% url 'languages' %}">
+    <button type="button" class="btn btn-primary">Go back</button>
+    </a>
 
-  <button type="submit" name="yes" class="btn btn-primary">YES</button>
-  <button type="submit" name="no" class="btn btn-primary">NO</button>
+{% else %}
 
-</form>
+    <br>
+    <p>Are you sure you want to remove language: {{ language_name }}?</p>
+
+    <form action="{% url 'remove-language' language_id %}" method="post">
+      {% csrf_token %}
+
+      <button type="submit" name="yes" class="btn btn-primary">YES</button>
+      <button type="submit" name="no" class="btn btn-primary">NO</button>
+
+    </form>
+
+{% endif %}
 
 {% endblock %}

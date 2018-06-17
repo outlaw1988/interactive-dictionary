@@ -17,8 +17,9 @@ class ExamInit(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         config.clean_up()
-        category = Category.objects.filter(id=self.request.session['category_id'])[0]
-        words_set = Set.objects.filter(id=self.request.session['set_id'])[0]
+        category = Category.objects.get(id=self.request.session['category_id'])
+        words_set = Set.objects.get(id=self.request.session['set_id'])
+        setup = Setup.objects.get(set=words_set)
 
         words = Word.objects.filter(set=words_set)
         config.create_shuffle_list(len(words))
@@ -26,13 +27,15 @@ class ExamInit(LoginRequiredMixin, TemplateView):
         words_to_show = words[shuffled_idx]
         src_word = words_to_show.src_word
         config.curr_corr_ans = words_to_show.target_word
+        # countdown_duration =
         context = {
             'category': category,
             'category_id': self.request.session['category_id'],
             'set': words_set,
             'src_word': src_word,
             'word_idx_to_show': config.current_word_idx + 1,
-            'size': config.size
+            'size': config.size,
+            'countdown_duration': setup.countdown_duration
         }
 
         return context

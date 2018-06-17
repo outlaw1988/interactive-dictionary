@@ -109,56 +109,57 @@
     display:block;
 }
 
-/* .dropdown {
-    background-color: green;
-    position: absolute;
-    top: 5px;
-    right: 0;
-} */
-
-
-
-/* #container {
-    width:100%;
-    text-align:center;
+#progressBar {
+    width: 90%;
+    margin: 10px auto;
+    height: 22px;
+    background-color: #0A5F44;
 }
 
-#left {
-    float:left;
-    width:100px;
-    height: 20px;
-    background: #ff0000;
+#progressBar div {
+    height: 100%;
+    text-align: right;
+    padding: 0 10px;
+    line-height: 22px; /* same as #progressBar height if we want text middle aligned */
+    width: 100;
+    background-color: #CBEA00;
+    box-sizing: border-box;
 }
 
-#center {
-    display: inline-block;
-    margin:0 auto;
-    width:100px;
-    height: 20px;
-    background: #00ff00;
+.progress {
+    width: 50%;
 }
 
-#right {
-    float:right;
-    width:100px;
-    height: 20px;
-    background: #0000ff;
-} */
+.secs-left-div {
+    width: 50%;
+}
+
+.secs-left-div #secs-left {
+    float: right;
+}
 
 @media (max-width: 570px) {
-  .category {
-      border: 1px solid #000;
-      margin-bottom: 10px;
-      width: 90vw;
-      display: block;
-      text-align: center;
-  }
+    .category {
+        border: 1px solid #000;
+        margin-bottom: 10px;
+        width: 90vw;
+        display: block;
+        text-align: center;
+    }
 
-  .set-box {
-      border: 1px solid #000;
-      margin-bottom: 10px;
-      width: 90vw;
-      display: block;
-      text-align: center;
-  }
+    .set-box {
+        border: 1px solid #000;
+        margin-bottom: 10px;
+        width: 90vw;
+        display: block;
+        text-align: center;
+    }
+
+    .progress {
+        width: 100%;
+    }
+
+    .secs-left-div {
+        width: 100%;
+    }
 }
