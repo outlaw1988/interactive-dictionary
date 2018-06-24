@@ -12,6 +12,22 @@
 
     <br><br>
 
+    <span>Import txt/csv file: </span>
+    <input id="csv-txt" type="file">
+
+    <span>Separator: </span>
+    <select id="file-separator">
+        <option value=";">;</option>
+        <option value=",">,</option>
+    </select>
+
+    <br><br>
+
+    <button type="button" class="btn btn-primary" onclick="read_file()">Import file</button>
+    <span id="file-validator"></span>
+
+    <br><br>
+
     <table id="set_def_table" class="table-add-set">
       <tr>
         <th class="table-headers">
@@ -47,14 +63,14 @@
 <br>
 <a href="{% url 'category-sets-list' id %}">Go Back</a>
 
-<script language="javascript" type="text/javascript">
+<script language="javascript" type="text/javascript" charset="UTF-8">
+
     var idx = 10;
     var curr_target_side = "{{target_side}}";
     var curr_target_lan = "{{target_language}}";
     var curr_source_lan = "{{src_language}}";
 
     function add_word() {
-        //console.log(idx);
         idx += 1;
 
         var table = document.getElementById("set_def_table");
@@ -86,8 +102,6 @@
     }
 
     $('#{{form.target_language.auto_id}}').on('change', function (e) {
-        //var option_selected = $("option:selected", this);
-        //var value_selected = this.value;
         //swapping
         var temp = curr_target_lan;
         curr_target_lan = curr_source_lan;
@@ -98,7 +112,7 @@
             document.getElementById("right-lan").innerHTML = curr_source_lan;
         }
         else if (curr_target_side == "right") {
-          document.getElementById("left-lan").innerHTML = curr_source_lan;
+          document.getElementById0("left-lan").innerHTML = curr_source_lan;
           document.getElementById("right-lan").innerHTML = curr_target_lan;
         }
 
@@ -125,6 +139,56 @@
 
         swap_fields();
     });
+
+    var file_input = document.getElementById("csv-txt");
+
+    read_file = function () {
+
+        if(document.getElementById("csv-txt").value != "") {
+            document.getElementById("file-validator").innerHTML = "";
+            var reader = new FileReader();
+
+            reader.onload = function () {
+                var lines = reader.result.split('\n');
+                var split_arr = []
+                var separator = document.getElementById("file-separator").value;
+
+                for(var i = 0; i < lines.length; i++) {
+                    var line = lines[i].split(separator);
+                    if(line.length == 2) {
+                        split_arr.push(line);
+                    }
+                }
+
+                add_words_to_table(split_arr);
+            };
+            // start reading the file. When it is done, calls the onload event defined above.
+            reader.readAsText(file_input.files[0], 'UTF-8');
+        }
+        else {
+            document.getElementById("file-validator").innerHTML = "File is not selected";
+        }
+    };
+
+    // fileInput.addEventListener('change', readFile);
+
+    function add_words_to_table(arr) {
+        remove_all_table_elements();
+        for(var i = 0; i < arr.length; i++) {
+            add_word();
+            document.getElementById("left_field" + idx).value = arr[i][0];
+            document.getElementById("right_field" + idx).value = arr[i][1];
+        }
+    }
+
+    function remove_all_table_elements() {
+        var table = document.getElementById("set_def_table");
+        var rowCount = table.rows.length;
+        var tableHeaderRowCount = 2;
+        for (var i = tableHeaderRowCount; i < rowCount; i++) {
+            table.deleteRow(tableHeaderRowCount);
+        }
+    }
 
 </script>
 

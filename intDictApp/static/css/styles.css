@@ -138,6 +138,10 @@
     float: right;
 }
 
+#file-validator {
+    color: red;
+}
+
 @media (max-width: 570px) {
     .category {
         border: 1px solid #000;
