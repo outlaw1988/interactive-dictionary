@@ -24,6 +24,24 @@
     margin-right: 25%;
 }
 
+.set-setup {
+    border: 1px solid #000;
+    padding-top: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    margin-right: 60%;
+}
+
+.import-file {
+    border: 1px solid #000;
+    padding-top: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    margin-right: 60%;
+}
+
 .table-words {
     text-align: center;
 }
@@ -142,6 +160,10 @@
     color: red;
 }
 
+#add-word {
+    text-align: center;
+}
+
 @media (max-width: 570px) {
     .category {
         border: 1px solid #000;
@@ -165,5 +187,28 @@
 
     .secs-left-div {
         width: 100%;
+    }
+
+    .table-add-set {
+        width: 50%;
+        margin-left: 0%;
+    }
+
+    .set-setup {
+        border: 1px solid #000;
+        padding-top: 10px;
+        padding-right: 10px;
+        padding-bottom: 10px;
+        padding-left: 10px;
+        margin-right: 0%;
+    }
+
+    .import-file {
+        border: 1px solid #000;
+        padding-top: 10px;
+        padding-right: 10px;
+        padding-bottom: 10px;
+        padding-left: 10px;
+        margin-right: 0%;
     }
 }
