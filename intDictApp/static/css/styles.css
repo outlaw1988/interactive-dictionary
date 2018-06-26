@@ -33,6 +33,10 @@
     margin-right: 60%;
 }
 
+.numbers {
+    text-align: right;
+}
+
 .import-file {
     border: 1px solid #000;
     padding-top: 10px;

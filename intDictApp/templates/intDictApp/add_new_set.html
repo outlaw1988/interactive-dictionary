@@ -38,6 +38,7 @@
 
     <table id="set_def_table" class="table-add-set">
       <tr>
+        <th></th>
         <th class="table-headers">
           <span id="left-label">{% if target_side == 'left' %} Target language {% else %} Source language {% endif %}</span>
         </th>
@@ -46,6 +47,7 @@
         </th>
       </tr>
       <tr>
+        <th></th>
         <th class="table-headers">
           <span id="left-lan">{% if target_side == 'left' %} {{target_language}} {% else %} {{src_language}} {% endif %}</span>
         </th>
@@ -56,6 +58,7 @@
 
         {% for i in tableLen %}
             <tr>
+                <td class="numbers" id="number-{{forloop.counter}}">{{forloop.counter}}</td>
                 <td class="table-words"><input type="text" name="left_field{{i}}" id="left_field{{i}}"/></td>
                 <td class="table-words"><input type="text" name="right_field{{i}}" id="right_field{{i}}"/></td>
                 <td><img src="../../static/images/remove_icon_res.png" onclick="remove_words(this)"></td>
@@ -91,16 +94,40 @@
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
         var cell3 = row.insertCell(2);
-        cell1.innerHTML = "<input type='text' name='left_field" + idx + "' id='left_field" + idx + "'/>";
-        cell1.align = "center";
-        cell2.innerHTML = "<input type='text' name='right_field" + idx + "' id='right_field" + idx + "'/>";
+        var cell4 = row.insertCell(3);
+        cell1.innerHTML = "<td>" + (table.rows.length - 2) + "</td>";
+        cell1.id = "number-" + (table.rows.length - 2);
+        cell1.className = "numbers";
+        cell1.align = "right";
+        cell2.innerHTML = "<input type='text' name='left_field" + idx + "' id='left_field" + idx + "'/>";
         cell2.align = "center";
-        cell3.innerHTML = "<img src='../../static/images/remove_icon_res.png' onclick='remove_words(this)'>";
+        cell3.innerHTML = "<input type='text' name='right_field" + idx + "' id='right_field" + idx + "'/>";
+        cell3.align = "center";
+        cell4.innerHTML = "<img src='../../static/images/remove_icon_res.png' onclick='remove_words(this)'>";
     }
 
     function remove_words(btn) {
         var row = btn.parentNode.parentNode;
+
+        var table = document.getElementById("set_def_table");
+        var rows_num = table.rows.length - 2;
+
         row.parentNode.removeChild(row);
+
+        var curr_row_num = parseInt(row.cells[0].innerHTML);
+        console.log("Rows num: " + rows_num);
+        console.log("Current row num: " + curr_row_num);
+        for(var i = 0; i < (rows_num - curr_row_num); i++) {
+            var idx = rows_num - i;
+            var cell = table.rows[idx].cells[0];
+            change_number((idx - 1), cell);
+        }
+    }
+
+    function change_number(idx, cell) {
+        console.log("Cell: " + cell);
+        cell.innerHTML = idx.toString();
+        cell.id = "number-" + idx;
     }
 
     function swap_fields() {
